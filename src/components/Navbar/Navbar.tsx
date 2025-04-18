@@ -9,7 +9,7 @@ import {
 
 const Navbar = () => {
   return (
-    <nav className="bg-dark-blue text-white px-5">
+    <nav className="bg-dark-blue text-white">
       <Topbar />
       <NavLinks />
     </nav>
@@ -50,7 +50,7 @@ const Topbar = () => {
 };
 const NavLinks = () => {
   return (
-    <div>
+    <div className="maxScreen">
       <ul className="flex gap-2 py-2 pb-4">
         <li>
           <Button

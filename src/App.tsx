@@ -1,8 +1,9 @@
 import MainLayout from "./MainLayout";
+import Flightpage from "./pages/Flightpage";
 const App = () => {
   return (
     <MainLayout>
-      <h1>hello</h1>
+      <Flightpage />
     </MainLayout>
   );
 };
