@@ -1,6 +1,6 @@
 import { FlightSearchForm } from "./FlightSearchForm";
 
-const FlightHero = () => {
+const FlightHeader = () => {
   return (
     <div className="bg-dark-blue text-white pt-2">
       <div className="maxScreen">
@@ -17,4 +17,4 @@ const FlightHero = () => {
   );
 };
 
-export default FlightHero;
+export default FlightHeader;

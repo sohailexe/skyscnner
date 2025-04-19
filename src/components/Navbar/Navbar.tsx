@@ -9,7 +9,7 @@ import {
 
 const Navbar = () => {
   return (
-    <nav className="bg-dark-blue text-white">
+    <nav className="bg-dark-blue text-white pt-5">
       <Topbar />
       <NavLinks />
     </nav>
