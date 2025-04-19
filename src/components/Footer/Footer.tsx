@@ -1,7 +1,6 @@
 import React from "react";
 import { ExternalLink } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
-import { Link } from "react-router";
 
 // Types for our footer data
 type FooterLink = {
