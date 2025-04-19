@@ -18,7 +18,7 @@ const FlightHero: React.FC<HeroSectionProps> = ({
   onButtonClick = () => {},
 }) => {
   return (
-    <div className="maxScreen mt-8 mx-4  relative  h-[500px] overflow-hidden rounded-lg">
+    <div className="maxScreen mt-8   relative  h-[500px] overflow-hidden rounded-lg">
       {/* Background Image */}
       <div
         className="absolute inset-0 bg-cover bg-center"
