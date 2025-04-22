@@ -3,7 +3,7 @@ import FastFacts from "@/hotels/fast-facts/FastFacts";
 import HotelsHeader from "@/hotels/Header/Hotels-Header";
 import HotelBrands from "@/hotels/HotelBrands";
 import HotelTips from "@/hotels/hotel-tips/HotelTips";
-import HotelFeatureShowcase from "@/hotels/Hotel-Feature-Showcase/HotelFeatureShowcase";
+import HotelFeatureShowcase from "@/hotels/HotelFeatureShowcase";
 
 const Hotelpage = () => {
   return (

@@ -176,7 +176,6 @@ export default function HotelSearchBar() {
 
 // Component for the guests and rooms selector popover content
 function GuestsRoomsSelector({
-  guests,
   setGuests,
 }: {
   guests: string;
