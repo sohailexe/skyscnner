@@ -10,7 +10,7 @@ interface HeroSectionProps {
   onButtonClick?: () => void;
 }
 
-const FlightHero: React.FC<HeroSectionProps> = ({
+const HomeHero: React.FC<HeroSectionProps> = ({
   backgroundImageUrl = bgImg,
   subtitle = "Can't decide where to go?",
   title = "Explore every destination",
@@ -56,4 +56,4 @@ const FlightHero: React.FC<HeroSectionProps> = ({
   );
 };
 
-export default FlightHero;
+export default HomeHero;

@@ -7,7 +7,7 @@ const buttons = [
   {
     name: "Flights",
     icon: faPlane,
-    path: "/",
+    path: "/flights",
   },
   {
     name: "Hotels",

@@ -113,7 +113,7 @@ const CustomCheckbox = ({
 );
 
 // Main component
-export function FlightSearchForm() {
+export function HomeSearchForm() {
   // State management
   const [formData, setFormData] = useState<
     Omit<FlightSearchData, "nearbyAirports" | "directFlights">

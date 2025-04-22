@@ -1,6 +1,6 @@
-import { FlightSearchForm } from "./FlightSearchForm";
+import { HomeSearchForm } from "./HomeSearchForm";
 
-const FlightHeader = () => {
+const HomeHeader = () => {
   return (
     <div className="bg-dark-blue text-white pt-2">
       <div className="maxScreen">
@@ -11,10 +11,10 @@ const FlightHeader = () => {
         <a href="#" className="hover:text-white/60 font-bold">
           Create a multi-city route
         </a>
-        <FlightSearchForm />
+        <HomeSearchForm />
       </div>
     </div>
   );
 };
 
-export default FlightHeader;
+export default HomeHeader;
