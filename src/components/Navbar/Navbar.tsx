@@ -48,35 +48,38 @@ const Topbar = () => {
     </div>
   );
 };
+
+const buttons = [
+  {
+    name: "Flights",
+    icon: faPlane,
+  },
+  {
+    name: "Hotels",
+    icon: faHotel,
+  },
+  {
+    name: "Cars",
+    icon: faCar,
+  },
+];
 const NavLinks = () => {
+  const buttonList = buttons.map((button, index) => {
+    return (
+      <li key={index}>
+        <Button
+          className="rounded-4xl w-full  bg-transparent border  "
+          variant={"outline"}
+        >
+          <FontAwesomeIcon icon={button.icon} className="mr-2" />
+          {button.name}
+        </Button>
+      </li>
+    );
+  });
   return (
     <div className="maxScreen">
-      <ul className="flex gap-2 py-2 pb-4">
-        <li>
-          <Button
-            className="rounded-4xl  bg-transparent border  "
-            variant={"outline"}
-          >
-            Flights
-          </Button>
-        </li>
-        <li>
-          <Button
-            className="rounded-4xl bg-transparent border  "
-            variant={"outline"}
-          >
-            Hotels
-          </Button>
-        </li>
-        <li>
-          <Button
-            className="rounded-4xl bg-transparent border  "
-            variant={"outline"}
-          >
-            Cars
-          </Button>
-        </li>
-      </ul>
+      <ul className="flex gap-2 py-2 pb-4 ">{buttonList}</ul>
     </div>
   );
 };
