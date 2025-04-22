@@ -1,5 +1,3 @@
-// components/ServiceOptionBar.tsx
-
 import { CarIcon, Globe, LucideHotel } from "lucide-react";
 
 interface ServiceButtonProps {

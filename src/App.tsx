@@ -4,14 +4,14 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Hotelpage from "./pages/Hotelpage";
 const App = () => {
   return (
-    <MainLayout>
-      <Router>
+    <Router>
+      <MainLayout>
         <Routes>
           <Route path="/" element={<Flightpage />} />
           <Route path="/hotels" element={<Hotelpage />} />
         </Routes>
-      </Router>
-    </MainLayout>
+      </MainLayout>
+    </Router>
   );
 };
 
