@@ -1,8 +1,9 @@
 import HotelList from "@/hotels/card-list/Hotels-list";
 import FastFacts from "@/hotels/fast-facts/FastFacts";
 import HotelsHeader from "@/hotels/Header/Hotels-Header";
-import HotelBrands from "@/hotels/hotel-brands/HotelBrands";
+import HotelBrands from "@/hotels/HotelBrands";
 import HotelTips from "@/hotels/hotel-tips/HotelTips";
+import HotelFeatureShowcase from "@/hotels/Hotel-Feature-Showcase/HotelFeatureShowcase";
 
 const Hotelpage = () => {
   return (
@@ -11,6 +12,7 @@ const Hotelpage = () => {
       <HotelTips />
       <HotelBrands />
       <FastFacts />
+      <HotelFeatureShowcase />
       <HotelList />
     </>
   );
