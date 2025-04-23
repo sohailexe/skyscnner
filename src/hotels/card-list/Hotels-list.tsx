@@ -14,6 +14,7 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
+import Autoplay from "embla-carousel-autoplay";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faCircle as faSolidCircle,
@@ -107,7 +108,14 @@ const HotelList: React.FC = () => (
       Discover a wide range of hotels tailored to your needs.
     </p>
 
-    <Carousel className="w-full">
+    <Carousel
+      className="w-full"
+      plugins={[
+        Autoplay({
+          delay: 2000,
+        }),
+      ]}
+    >
       <CarouselContent>
         {hotelList.map((hotel, index) => (
           <CarouselItem key={index} className="md:basis-1/2 lg:basis-1/3">
