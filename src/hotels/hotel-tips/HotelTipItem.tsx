@@ -13,9 +13,9 @@ const HotelTipItem: React.FC<HotelTipItemProps> = ({
   description,
 }) => {
   return (
-    <div className="flex items-start space-x-2 max-w-xs">
-      <Icon className="h-5 w-5 mt-1 text-gray-700" />
-      <p className="text-sm text-gray-800">
+    <div className="flex flex-col md:flex-row items-start space-x-2 ">
+      <Icon className="size-8" />
+      <p className=" ">
         <strong>{title}</strong> {description}
       </p>
     </div>

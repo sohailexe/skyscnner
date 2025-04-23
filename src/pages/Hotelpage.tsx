@@ -11,9 +11,9 @@ const Hotelpage = () => {
       <HotelsHeader />
       <HotelTips />
       <HotelBrands />
+      <HotelList />
       <FastFacts />
       <HotelFeatureShowcase />
-      <HotelList />
     </>
   );
 };

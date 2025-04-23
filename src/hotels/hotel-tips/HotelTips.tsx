@@ -28,7 +28,7 @@ const HotelTips: React.FC = () => {
   ];
 
   return (
-    <div className="maxScreen grid grid-cols-3  gap-6 p-4">
+    <div className="maxScreen grid grid-cols-2 lg:grid-cols-3  gap-6 py-12">
       {tips.map((tip, index) => (
         <HotelTipItem
           key={index}

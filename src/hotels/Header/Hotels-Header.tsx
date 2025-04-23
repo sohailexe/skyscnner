@@ -2,7 +2,7 @@ import hotelsBackground from "@/assets/images/hotelspage-banner.webp";
 import HotelSearchBar from "./HotelSearchBar";
 const HotelsHeader = () => {
   return (
-    <div className="  relative  h-[550px] overflow-hidden ">
+    <section className="  relative  h-[550px] overflow-hidden ">
       {/* Background Image */}
       <div
         className="absolute inset-0 bg-cover bg-center"
@@ -24,7 +24,7 @@ const HotelsHeader = () => {
           <HotelSearchBar />
         </div>
       </div>
-    </div>
+    </section>
   );
 };
 
