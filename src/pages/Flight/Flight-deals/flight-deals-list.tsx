@@ -11,8 +11,8 @@ import Piaimg from "@/assets/images/pia.webp";
 import { ArrowRight } from "lucide-react";
 const FlightDealList = () => {
   return (
-    <section className="maxScreen felx flex-col">
-      <h1 className="text-2xl font-bold ">Flight Deals</h1>
+    <section className="maxScreen felx flex-col pb-20">
+      <h1 className="text-2xl font-bold ">Flight Deals from pakistan</h1>
       <p className="text-sm mb-5">
         List of flight deals will be displayed here.
       </p>

@@ -17,8 +17,8 @@ const FeatureShowcase = ({
 }: FeatureShowcaseProps) => {
   return (
     <section className="maxScreen bg-slate-100 text-center px-6 py-10">
-      {heading && <h1 className="text-lg font-bold pb-2 ">{heading}</h1>}
-      {description && <p className="text-smpb-4">{description}</p>}
+      {heading && <h1 className="px-8 text-2xl font-bold pb-2 ">{heading}</h1>}
+      {description && <p className="text-xs pb-4 px-8">{description}</p>}
       <ul className="  grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 ">
         {features.map((feature) => (
           <li
