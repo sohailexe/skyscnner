@@ -3,6 +3,7 @@ import { HomeSearchForm } from "@/pages/home/HomeSearchForm";
 import headerImg from "@/assets/images/Flights-hero.webp";
 import Tips from "@/components/Tips/Tips";
 import { flightsTips } from "@/db/tipsdata";
+import FlightDealList from "./Flight/Flight-deals/flight-deals-list";
 const FlightPage = () => {
   return (
     <main>
@@ -10,6 +11,7 @@ const FlightPage = () => {
         <HomeSearchForm />
       </PagesHeader>
       <Tips TipsData={flightsTips} />
+      <FlightDealList />
     </main>
   );
 };
