@@ -1,13 +1,16 @@
-import hotelsBackground from "@/assets/images/hotelspage-banner.webp";
-import HotelSearchBar from "./HotelSearchBar";
-const HotelsHeader = () => {
+interface PagesHeaderProps {
+  image: string;
+  heading?: string;
+  children?: React.ReactNode;
+}
+const PagesHeader = ({ image, heading, children }: PagesHeaderProps) => {
   return (
     <section className="  relative  h-[550px] overflow-hidden ">
       {/* Background Image */}
       <div
         className="absolute inset-0 bg-cover bg-center"
         style={{
-          backgroundImage: `url(${hotelsBackground})`,
+          backgroundImage: `url(${image})`,
           backgroundPosition: "center",
         }}
       />
@@ -18,14 +21,12 @@ const HotelsHeader = () => {
       {/* Content positioning */}
       <div className="maxScreen absolute inset-0 flex  text-white">
         <div className=" py-32 flex flex-col justify-center items-center w-full ">
-          <h1 className="font-extrabold text-6xl pb-5 ">
-            Find the right hotel today
-          </h1>
-          <HotelSearchBar />
+          <h1 className="font-extrabold text-6xl pb-5 ">{heading}</h1>
+          {children}
         </div>
       </div>
     </section>
   );
 };
 
-export default HotelsHeader;
+export default PagesHeader;

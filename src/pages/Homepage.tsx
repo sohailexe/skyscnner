@@ -1,10 +1,15 @@
+import PagesHeader from "@/components/PagesHeader";
 import ServiceOptionBar from "@/components/service-options/service-option-bar";
-import HomeHeader from "@/home/Header/Home-Header";
+import { HomeSearchForm } from "@/home/HomeSearchForm";
 import FlightHero from "@/home/Hero/Home-Hero";
+import headerImg from "@/assets/images/hotelspage-banner.webp";
+
 const HomePage = () => {
   return (
     <div>
-      <HomeHeader />
+      <PagesHeader image={headerImg} heading="Find your perfect hotel">
+        <HomeSearchForm />
+      </PagesHeader>
       <ServiceOptionBar />
       <FlightHero />
     </div>
