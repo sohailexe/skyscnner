@@ -1,4 +1,4 @@
-import { BedDouble, LucideIcon, Search, Tag } from "lucide-react";
+import { BedDouble, LucideIcon, Search, Tag, Plane } from "lucide-react";
 
 interface Tip {
   icon: LucideIcon;
@@ -24,4 +24,21 @@ const hotelTips: Tip[] = [
   },
 ];
 
-export { hotelTips };
+const flightsTips: Tip[] = [
+  {
+    icon: Plane,
+    title: "Find the best-value flight",
+    description: "for your dates, search by price or preferences",
+  },
+  {
+    icon: Tag,
+    title: "Compare flight deals",
+    description: "across hundreds of providers, all in one place",
+  },
+  {
+    icon: Search,
+    title: "Look out for flights with free cancellation",
+    description: "or excellent ratings",
+  },
+];
+export { hotelTips, flightsTips };
