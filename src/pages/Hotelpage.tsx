@@ -15,11 +15,7 @@ const Hotelpage = () => {
       <HotelBrands />
       <HotelList />
       <FastFacts />
-      <FeatureShowcase
-        features={hotelFeatures}
-        heading="Hello"
-        description="aksjhdvcagshdbhaiysucgd hgas dajsud as dh ajsd  asdgas"
-      />
+      <FeatureShowcase features={hotelFeatures} />
     </>
   );
 };
