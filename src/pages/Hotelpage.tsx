@@ -7,7 +7,7 @@ import { hotelTips } from "@/db/tipsdata";
 import { hotelFeatures } from "@/db/featuresData";
 import PagesHeader from "@/components/PagesHeader";
 import headerImg from "@/assets/images/hotelspage-banner.webp";
-import HotelSearchBar from "@/hotels/Header/HotelSearchBar";
+import HotelSearchBar from "@/hotels/HotelSearchBar";
 const Hotelpage = () => {
   return (
     <>
