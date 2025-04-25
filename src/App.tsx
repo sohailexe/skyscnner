@@ -1,5 +1,5 @@
 import MainLayout from "./MainLayout";
-import HomePage from "./pages/Homepage";
+import HomePage from "./pages/home/main/Homepage";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Hotelpage from "./pages/hotels/main/Hotelpage";
 import FlightPage from "./pages/FlightPage";
