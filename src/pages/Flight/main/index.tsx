@@ -1,9 +1,9 @@
 import PagesHeader from "@/components/PagesHeader";
-import { HomeSearchForm } from "@/pages/home/main/home-main-components/HomeSearchForm";
+import { HomeSearchForm } from "@/pages/home/main/HomeSearchForm";
 import headerImg from "@/assets/images/Flights-hero.webp";
 import Tips from "@/components/Tips/Tips";
 import { flightsTips } from "@/db/tipsdata";
-import FlightDealList from "./Flight/Flight-deals/flight-deals-list";
+import FlightDealList from "./Flight-deals/flight-deals-list";
 import FeatureShowcase from "@/components/FeaturesShowcase";
 import { flightFeatures } from "@/db/featuresData";
 const FlightPage = () => {

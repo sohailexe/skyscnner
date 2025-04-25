@@ -1,9 +1,9 @@
 import PagesHeader from "@/components/PagesHeader";
 import carBg from "@/assets/images/car-bg.jpg";
-import CarSearchForm from "./cars/Car-search-form/car-search-form";
+import CarSearchForm from "./Car-search-form/car-search-form";
 import { carTips } from "@/db/tipsdata";
 import Tips from "@/components/Tips/Tips";
-import CarRentalDestination from "./cars/car-rental-destinations";
+import CarRentalDestination from "./car-rental-destinations";
 import FeatureShowcase from "@/components/FeaturesShowcase";
 import { carFeatures } from "@/db/featuresData";
 import { carFacts } from "@/db/facts";

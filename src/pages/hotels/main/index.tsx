@@ -1,13 +1,13 @@
-import HotelList from "@/pages/hotels/main/hotel-main-components/card-list/Hotels-list";
+import HotelList from "@/pages/hotels/main/card-list/Hotels-list";
 import FastFacts from "@/components/fast-facts/FastFacts";
-import HotelBrands from "@/pages/hotels/main/hotel-main-components/HotelBrands";
+import HotelBrands from "@/pages/hotels/main/HotelBrands";
 import Tips from "@/components/Tips/Tips";
 import FeatureShowcase from "@/components/FeaturesShowcase";
 import { hotelTips } from "@/db/tipsdata";
 import { hotelFeatures } from "@/db/featuresData";
 import PagesHeader from "@/components/PagesHeader";
 import headerImg from "@/assets/images/hotelspage-banner.webp";
-import HotelSearchBar from "@/pages/hotels/main/hotel-main-components/HotelSearchBar";
+import HotelSearchBar from "@/pages/hotels/main/HotelSearchBar";
 import { hotelFacts } from "@/db/facts";
 const Hotelpage = () => {
   return (

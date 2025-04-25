@@ -1,10 +1,10 @@
 import MainLayout from "./MainLayout";
-import HomePage from "./pages/home/main/Homepage";
+import HomePage from "./pages/home/main";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import Hotelpage from "./pages/hotels/main/Hotelpage";
-import FlightPage from "./pages/FlightPage";
-import CarsPage from "./pages/CarsPage";
-import HotelInfoPage from "./pages/hotels/hotel-info-page/hotel-info-page";
+import Hotelpage from "./pages/hotels/main";
+import FlightPage from "./pages/Flight/main";
+import CarsPage from "./pages/cars/main";
+import HotelInfoPage from "./pages/hotels/hotel-info-page";
 const App = () => {
   return (
     <Router>
