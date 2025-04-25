@@ -25,6 +25,7 @@ import {
 import { faCircle as faRegularCircle } from "@fortawesome/free-regular-svg-icons";
 import { BookAIcon } from "lucide-react";
 import hotelList from "@/db/Hotels";
+import { Link } from "react-router";
 
 interface StarListProps {
   stars: number;
@@ -119,39 +120,41 @@ const HotelList: React.FC = () => (
       <CarouselContent>
         {hotelList.map((hotel, index) => (
           <CarouselItem key={index} className="md:basis-1/2 lg:basis-1/3">
-            <Card className="py-0 gap-3">
-              <img
-                src={hotel.image}
-                alt={hotel.name}
-                className="w-full h-28 object-cover rounded-t-lg"
-              />
+            <Link to={`/hotels/${hotel.id}`} key={index}>
+              <Card className="py-0 gap-3">
+                <img
+                  src={hotel.image}
+                  alt={hotel.name}
+                  className="w-full h-28 object-cover rounded-t-lg"
+                />
 
-              <CardHeader>
-                <CardTitle className="text-2xl">{hotel.name}</CardTitle>
-                <CardDescription className="text-sm">
-                  {hotel.location}
-                </CardDescription>
-                <CardAction>
-                  <StarList stars={hotel.star} />
-                </CardAction>
-              </CardHeader>
+                <CardHeader>
+                  <CardTitle className="text-2xl">{hotel.name}</CardTitle>
+                  <CardDescription className="text-sm">
+                    {hotel.location}
+                  </CardDescription>
+                  <CardAction>
+                    <StarList stars={hotel.star} />
+                  </CardAction>
+                </CardHeader>
 
-              <div className="flex items-center px-5 gap-2">
-                <span className="font-bold">{hotel.rating}</span>
-                <BookAIcon className="w-4 h-4" />
-                <CircleList circles={2.4} />
-                <span className="text-sm font-light">
-                  {hotel.review} reviews
-                </span>
-              </div>
+                <div className="flex items-center px-5 gap-2">
+                  <span className="font-bold">{hotel.rating}</span>
+                  <BookAIcon className="w-4 h-4" />
+                  <CircleList circles={2.4} />
+                  <span className="text-sm font-light">
+                    {hotel.review} reviews
+                  </span>
+                </div>
 
-              <hr />
+                <hr />
 
-              <CardFooter className="justify-end py-3 flex flex-col items-end">
-                <p className="text-3xl font-bold">Rs {hotel.price}</p>
-                <p className="text-sm font-light">Per Night</p>
-              </CardFooter>
-            </Card>
+                <CardFooter className="justify-end py-3 flex flex-col items-end">
+                  <p className="text-3xl font-bold">Rs {hotel.price}</p>
+                  <p className="text-sm font-light">Per Night</p>
+                </CardFooter>
+              </Card>
+            </Link>
           </CarouselItem>
         ))}
       </CarouselContent>
