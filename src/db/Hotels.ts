@@ -9,7 +9,7 @@ const hotelList = [
     review: 2000,
     price: 100,
     location: "Location 1",
-    star: 4.4,
+    star: 2,
     rating: 4.5,
   },
   {

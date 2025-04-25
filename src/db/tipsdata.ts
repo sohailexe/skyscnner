@@ -41,4 +41,22 @@ const flightsTips: Tip[] = [
     description: "or excellent ratings",
   },
 ];
-export { hotelTips, flightsTips };
+
+const carTips: Tip[] = [
+  {
+    icon: Search,
+    title: "Find the best-value car",
+    description: "for your dates, search by price or preferences",
+  },
+  {
+    icon: Tag,
+    title: "Compare car deals",
+    description: "across hundreds of providers, all in one place",
+  },
+  {
+    icon: BedDouble,
+    title: "Look out for cars with free cancellation",
+    description: "or excellent ratings",
+  },
+];
+export { hotelTips, flightsTips, carTips };

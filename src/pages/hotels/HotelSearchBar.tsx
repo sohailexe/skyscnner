@@ -52,7 +52,7 @@ export default function HotelSearchBar() {
   };
 
   return (
-    <div className="bg-dark-blue p-6 rounded-3xl text-white ">
+    <div className="mx-auto bg-dark-blue p-6 rounded-3xl text-white w-fit">
       <div>
         <h2 className="text-sm mb-2">Where do you want to stay?</h2>
 

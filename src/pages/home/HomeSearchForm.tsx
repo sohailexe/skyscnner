@@ -162,7 +162,7 @@ export function HomeSearchForm() {
   return (
     <form
       onSubmit={handleSearch}
-      className="pb-5 flex flex-col justify-center items-center bg-dark-blue p-8 rounded-3xl text-white "
+      className="pb-5 flex flex-col justify-center items-center bg-dark-blue p-8 rounded-3xl text-white w-fit mx-auto"
     >
       <div className="w-full flex gap-2 py-3 justify-center items-center">
         {/* From Input with Swap Button */}
