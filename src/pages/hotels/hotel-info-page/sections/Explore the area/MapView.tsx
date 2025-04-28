@@ -9,7 +9,7 @@ import markerShadow from "leaflet/dist/images/marker-shadow.png";
 // Define types for the SetMapView props
 interface SetMapViewProps {
   center: [number, number]; // Ensures the center is a tuple with two numeric values (latitude, longitude)
-  zoom: number; // Defines the zoom level as a number
+  zoom?: number; // Defines the zoom level as a number
 }
 
 // Fix for missing types (default marker icon)
@@ -31,7 +31,9 @@ const SetMapView: React.FC<SetMapViewProps> = ({ center, zoom }) => {
 };
 
 // MapView component
-const MapView: React.FC<{ className: string }> = ({ className }) => {
+const MapView: React.FC<{ className?: string; zoom?: number }> = ({
+  className,
+}) => {
   const position: [number, number] = [24.92423, 67.054455]; // Set the position as a tuple
   const zoomLevel: number = 14; // Zoom level as a number
 

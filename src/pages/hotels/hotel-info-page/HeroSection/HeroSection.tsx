@@ -4,7 +4,7 @@ import HotelInfoData from "../Utility";
 import Rating from "./HeroSectionComponets/Rating";
 import Gallery from "./Gallery";
 const HeroSection = () => {
-  const [HotelInfo, setHotelInfo] = useState(HotelInfoData);
+  const [HotelInfo] = useState(HotelInfoData);
 
   return (
     <>

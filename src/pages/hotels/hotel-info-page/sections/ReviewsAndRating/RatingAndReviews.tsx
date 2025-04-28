@@ -1,4 +1,3 @@
-import React from "react";
 import Layout from "../../Utility/Layout";
 import ReviewAndRating from "../index";
 import Rating from "../../HeroSection/HeroSectionComponets/Rating";
@@ -31,7 +30,10 @@ const RatingAndReviews = () => {
                   </span>
                   /5
                 </h1>
-                <Rating HotelInfo={ReviewAndRating} />
+                <Rating
+                  rating={ReviewAndRating.rating}
+                  review_count={ReviewAndRating.review_count}
+                />
               </div>
               <div className="w-[80%]">
                 <Reviews categories={ReviewAndRating.categories} />

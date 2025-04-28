@@ -2,7 +2,6 @@ import React, { useRef, useState, useEffect } from "react";
 import Layout from "../Utility/Layout";
 import { Subnavigations } from "./index";
 import { Link } from "react-scroll";
-import NavCard from "./NavCard";
 import gsap from "gsap";
 
 interface SubnavigationItem {
