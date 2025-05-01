@@ -23,7 +23,9 @@ const PagesHeader = ({ image, heading, children }: PagesHeaderProps) => {
       <div className="absolute inset-0 flex items-center justify-center w-full text-white">
         <div className="container mx-auto px-4 flex flex-col items-center w-full">
           {heading && (
-            <h1 className="font-extrabold text-6xl pb-5">{heading}</h1>
+            <h1 className="font-extrabold text-3xl md:text-6xl md:pb-5">
+              {heading}
+            </h1>
           )}
           <div className="w-full">{children}</div>
         </div>

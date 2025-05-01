@@ -1,5 +1,5 @@
 import PagesHeader from "@/components/PagesHeader";
-import { HomeSearchForm } from "@/pages/home/main/HomeSearchForm";
+import HomeSearchForm from "@/pages/home/main/HomeSearchForm";
 import headerImg from "@/assets/images/Flights-hero.webp";
 import Tips from "@/components/Tips/Tips";
 import { flightsTips } from "@/db/tipsdata";
