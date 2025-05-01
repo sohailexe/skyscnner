@@ -6,12 +6,41 @@ import { flightsTips } from "@/db/tipsdata";
 import FlightDealList from "./Flight-deals/flight-deals-list";
 import FeatureShowcase from "@/components/FeaturesShowcase";
 import { flightFeatures } from "@/db/featuresData";
+import {
+  Breadcrumb,
+  BreadcrumbEllipsis,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@radix-ui/react-dropdown-menu";
 const FlightPage = () => {
   return (
     <main>
       <PagesHeader image={headerImg} heading="Find your Flight">
         <HomeSearchForm />
       </PagesHeader>
+
+      <Breadcrumb className="maxScreen mt-6 text-2xl">
+        <BreadcrumbList>
+          <BreadcrumbItem>
+            <BreadcrumbLink href="/">Home</BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+
+          <BreadcrumbItem>
+            <BreadcrumbPage>Flight</BreadcrumbPage>
+          </BreadcrumbItem>
+        </BreadcrumbList>
+      </Breadcrumb>
+
       <Tips TipsData={flightsTips} />
       <FlightDealList />
       <FeatureShowcase

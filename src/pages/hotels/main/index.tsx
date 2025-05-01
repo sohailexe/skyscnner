@@ -9,12 +9,31 @@ import PagesHeader from "@/components/PagesHeader";
 import headerImg from "@/assets/images/hotelspage-banner.webp";
 import HotelSearchBar from "@/pages/hotels/main/HotelSearchBar";
 import { hotelFacts } from "@/db/facts";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
 const Hotelpage = () => {
   return (
     <>
       <PagesHeader image={headerImg} heading="Find your perfect hotel">
         <HotelSearchBar />
       </PagesHeader>
+      <Breadcrumb className="maxScreen mt-6 text-2xl">
+        <BreadcrumbList>
+          <BreadcrumbItem>
+            <BreadcrumbLink href="/">Home</BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbPage>Hotel</BreadcrumbPage>
+          </BreadcrumbItem>
+        </BreadcrumbList>
+      </Breadcrumb>
       <Tips TipsData={hotelTips} />
       <HotelBrands />
       <HotelList />

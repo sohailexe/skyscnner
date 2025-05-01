@@ -6,7 +6,7 @@ export const Topbar = () => {
   return (
     <div className="maxScreen flex justify-between py-2">
       <div>
-        <Link to={"/"} className="text-2xl font-bold">
+        <Link to={"/"} className={`text-2xl font-bold`}>
           <img src={logo} alt="logo" className="w-36 invert brightness-0" />
         </Link>
       </div>

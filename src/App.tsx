@@ -5,6 +5,7 @@ import Hotelpage from "./pages/hotels/main";
 import FlightPage from "./pages/Flight/main";
 import CarsPage from "./pages/cars/main";
 import HotelInfoPage from "./pages/hotels/hotel-info-page";
+import FlightResult from "./pages/Flight/flight-search";
 const App = () => {
   return (
     <Router>
@@ -12,8 +13,7 @@ const App = () => {
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/flights" element={<FlightPage />} />
-          <Route path="/xx" element={<FlightPage />} />
-
+          <Route path="/flight/search" element={<FlightResult />} />
           <Route path="/hotels" element={<Hotelpage />} />
           <Route path="/hotels/:hotelId" element={<HotelInfoPage />} />
           <Route path="/cars" element={<CarsPage />} />

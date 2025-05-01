@@ -1,5 +1,3 @@
-"use client";
-
 import { useNavigate } from "react-router-dom";
 import { AlertCircle } from "lucide-react";
 import axios from "axios";
@@ -36,6 +34,7 @@ export default function FlightSearchForm() {
   // Form submission
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
+    navigate("/flight/search");
 
     if (!validateForm()) {
       // Show toast for validation errors
@@ -81,7 +80,6 @@ export default function FlightSearchForm() {
       // setFlightResults(response.data.data);
 
       // Navigate to results page
-      navigate("/search-results");
     } catch (error) {
       console.error("Flight search failed:", error);
 
