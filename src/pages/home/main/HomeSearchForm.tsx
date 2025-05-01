@@ -75,6 +75,7 @@ export default function FlightSearchForm() {
           directFlights: formData.directFlightsOnly,
         },
       });
+      console.log("Flight search response:", response.data);
 
       // Update context with search results (commented out for now)
       // setFlightResults(response.data.data);

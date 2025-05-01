@@ -8,19 +8,13 @@ import FeatureShowcase from "@/components/FeaturesShowcase";
 import { flightFeatures } from "@/db/featuresData";
 import {
   Breadcrumb,
-  BreadcrumbEllipsis,
   BreadcrumbItem,
   BreadcrumbLink,
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@radix-ui/react-dropdown-menu";
+
 const FlightPage = () => {
   return (
     <main>

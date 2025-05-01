@@ -183,7 +183,7 @@ const FlightResult: React.FC = () => {
           </div>
           <div className="space-y-3 max-h-52 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 pr-2">
             {Object.keys(
-              flights.reduce((acc, flight) => {
+              flights.reduce((acc) => {
                 // acc[flight.a] = true;
                 return acc;
               }, {})
@@ -197,7 +197,7 @@ const FlightResult: React.FC = () => {
                   airlineFlights.length > 0
                     ? Math.min(...airlineFlights.map((f) => f.price))
                     : null;
-                const count = airlineFlights.length;
+                // const count = airlineFlights.length;
 
                 return (
                   <label
@@ -239,7 +239,7 @@ const FlightResult: React.FC = () => {
               </span>
             </label>
             {Object.keys(
-              flights.reduce((acc, flight) => {
+              flights.reduce((acc) => {
                 // acc[flight.airline] = true;
                 return acc;
               }, {})
