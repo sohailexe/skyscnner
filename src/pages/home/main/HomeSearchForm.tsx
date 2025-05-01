@@ -9,7 +9,9 @@ import {
 } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { format } from "date-fns";
-
+import axios from "axios";
+import { useFlight } from "@/context/searchFlightcontext";
+import { useNavigate } from "react-router";
 // Types and interfaces
 interface FlightSearchData {
   from: string;
@@ -114,6 +116,7 @@ const CustomCheckbox = ({
 
 // Main component
 export function HomeSearchForm() {
+  const { flight, setFlight } = useFlight();
   // State management
   const [formData, setFormData] = useState<
     Omit<FlightSearchData, "nearbyAirports" | "directFlights">
@@ -126,7 +129,7 @@ export function HomeSearchForm() {
   const [nearbyAirports, setNearbyAirports] = useState<boolean>(false);
   const [directFlights, setDirectFlights] = useState<boolean>(false);
   const [rotated, setRotated] = useState<boolean>(false);
-
+  const navigate = useNavigate();
   // Handlers
   const handleInputChange =
     (field: keyof typeof formData) => (value: string) => {
@@ -135,7 +138,13 @@ export function HomeSearchForm() {
 
   const handleDateChange =
     (field: "departDate" | "returnDate") => (date: Date | undefined) => {
-      setFormData((prev) => ({ ...prev, [field]: date }));
+      // If the date is undefined, just return as is
+      if (date) {
+        const formattedDate = format(date, "yyyy-MM-dd");
+        setFormData((prev) => ({ ...prev, [field]: formattedDate }));
+      } else {
+        setFormData((prev) => ({ ...prev, [field]: undefined }));
+      }
     };
 
   const handleSwapLocations = () => {
@@ -147,18 +156,29 @@ export function HomeSearchForm() {
     setRotated((prev) => !prev);
   };
 
-  const handleSearch = (e: React.FormEvent) => {
+  const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log("clicked");
 
-    const searchData: FlightSearchData = {
-      ...formData,
-      nearbyAirports,
-      directFlights,
-    };
+    try {
+      const response = await axios.get("http://localhost:5000/api/v1/flights", {
+        params: {
+          origin: formData.from,
+          destination: formData.to,
+          date: formData.departDate,
+          adults: 2,
+        },
+      });
 
-    console.log("Search data:", searchData);
+      setFlight(response.data.data);
+
+      navigate("/xx");
+      // console.log(response.data);
+      // setFlight(response.data); ← If you're using context
+    } catch (error) {
+      console.error("Flight search failed:", error);
+    }
   };
-
   return (
     <form
       onSubmit={handleSearch}
@@ -201,12 +221,12 @@ export function HomeSearchForm() {
         {/* Date Pickers */}
         <DatePicker
           label="Depart"
-          date={formData.departDate}
+          date={formData.departDate ? new Date(formData.departDate) : undefined}
           onDateChange={handleDateChange("departDate")}
         />
         <DatePicker
           label="Return"
-          date={formData.returnDate}
+          date={formData.returnDate ? new Date(formData.returnDate) : undefined}
           onDateChange={handleDateChange("returnDate")}
         />
 

@@ -1,30 +1,41 @@
 import { CarIcon, Globe, LucideHotel } from "lucide-react";
+import { href, Link } from "react-router";
 
 interface ServiceButtonProps {
   icon: React.ReactNode;
   label: string;
+  href: string;
 }
 
-const ServiceButton = ({ icon, label }: ServiceButtonProps) => {
+const ServiceButton = ({ icon, label, href }: ServiceButtonProps) => {
   return (
-    <button className="bg-dark-blue hover:bg-light-blue/75 text-white cursor-pointer flex  gap-2  px-6 py-7 rounded-lg transition-colors duration-150 ease-in ">
-      <span className="text-lg">{icon}</span>
+    <Link
+      to={href}
+      className="bg-dark-blue hover:bg-light-blue/75 
+     text-md md:text-lg text-white cursor-pointer flex  gap-2 px-4 py-5 md:px-6 md:py-7 rounded-lg transition-colors duration-150 ease-in flex-col items justify-start text-start md:flex-row"
+    >
+      <span>{icon}</span>
       {label}
-    </button>
+    </Link>
   );
 };
 
 const ServiceOptionBar = () => {
   const services = [
-    { icon: <LucideHotel />, label: "Hotels" },
-    { icon: <CarIcon />, label: "Car hire" },
-    { icon: <Globe />, label: "Explore everywhere" },
+    { icon: <LucideHotel />, label: "Hotels", href: "/hotels" },
+    { icon: <CarIcon />, label: "Car hire", href: "/cars" },
+    { icon: <Globe />, label: "Explore everywhere", href: "/flights" },
   ];
 
   return (
     <div className="maxScreen grid grid-cols-3 justify-center gap-4 flex-wrap mt-12">
       {services.map((service, index) => (
-        <ServiceButton key={index} icon={service.icon} label={service.label} />
+        <ServiceButton
+          key={index}
+          icon={service.icon}
+          label={service.label}
+          href={service.href}
+        />
       ))}
     </div>
   );
