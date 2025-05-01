@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { AlertCircle } from "lucide-react";
-import axios from "axios";
+// import axios from "axios";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 
@@ -64,22 +64,20 @@ export default function FlightSearchForm() {
     setIsLoading(true);
 
     try {
-      const response = await axios.get("http://localhost:5000/api/v1/flights", {
-        params: {
-          origin: formData.origin,
-          destination: formData.destination,
-          date: formData.departureDate?.toISOString().split("T")[0],
-          returnDate: formData.returnDate?.toISOString().split("T")[0],
-          adults: formData.passengers,
-          nearbyAirports: formData.nearbyAirports,
-          directFlights: formData.directFlightsOnly,
-        },
-      });
-      console.log("Flight search response:", response.data);
-
+      // const response = await axios.get("http://localhost:5000/api/v1/flights", {
+      //   params: {
+      //     origin: formData.origin,
+      //     destination: formData.destination,
+      //     date: formData.departureDate?.toISOString().split("T")[0],
+      //     returnDate: formData.returnDate?.toISOString().split("T")[0],
+      //     adults: formData.passengers,
+      //     nearbyAirports: formData.nearbyAirports,
+      //     directFlights: formData.directFlightsOnly,
+      //   },
+      // });
+      // console.log("Flight search response:", response.data);
       // Update context with search results (commented out for now)
       // setFlightResults(response.data.data);
-
       // Navigate to results page
     } catch (error) {
       console.error("Flight search failed:", error);
