@@ -6,6 +6,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { motion } from "framer-motion";
 import faqData from "@/data/faqs";
 
 // Types definition
@@ -22,17 +23,40 @@ interface FaqItemProps {
 
 const FaqItem: React.FC<FaqItemProps> = ({ item, index, value }) => {
   return (
-    <AccordionItem
-      value={value || `item-${index}`}
-      className="border-b border-gray-200"
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{
+        duration: 0.4,
+        delay: index * 0.08,
+        ease: "easeOut",
+      }}
     >
-      <AccordionTrigger className="text-left font-medium py-4 hover:no-underline">
-        {item.question}
-      </AccordionTrigger>
-      <AccordionContent className="mt-2 text-gray-700 pb-4">
-        {item.answer}
-      </AccordionContent>
-    </AccordionItem>
+      <AccordionItem
+        value={value || `item-${index}`}
+        className="border-b border-gray-200"
+      >
+        <AccordionTrigger className="text-left font-medium py-4 hover:no-underline">
+          <motion.span
+            initial={{ color: "#000" }}
+            whileHover={{ color: "#3B82F6" }}
+            transition={{ duration: 0.2 }}
+          >
+            {item.question}
+          </motion.span>
+        </AccordionTrigger>
+        <motion.div
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: "auto" }}
+          exit={{ opacity: 0, height: 0 }}
+          transition={{ duration: 0.3, ease: "easeInOut" }}
+        >
+          <AccordionContent className="mt-2 text-gray-700 pb-4">
+            {item.answer}
+          </AccordionContent>
+        </motion.div>
+      </AccordionItem>
+    </motion.div>
   );
 };
 
@@ -40,11 +64,25 @@ const FaqItem: React.FC<FaqItemProps> = ({ item, index, value }) => {
 interface FaqColumnProps {
   items: FaqItemType[];
   defaultValue?: string;
+  columnIndex: number;
 }
 
-const FaqColumn: React.FC<FaqColumnProps> = ({ items, defaultValue }) => {
+const FaqColumn: React.FC<FaqColumnProps> = ({
+  items,
+  defaultValue,
+  columnIndex,
+}) => {
   return (
-    <div className="w-full md:w-1/2 lg:w-1/2 px-4">
+    <motion.div
+      className="w-full md:w-1/2 lg:w-1/2 px-4"
+      initial={{ opacity: 0, x: columnIndex === 0 ? -20 : 20 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{
+        duration: 0.5,
+        delay: 0.1 + columnIndex * 0.2,
+        ease: "easeOut",
+      }}
+    >
       <Accordion
         type="single"
         collapsible
@@ -56,11 +94,11 @@ const FaqColumn: React.FC<FaqColumnProps> = ({ items, defaultValue }) => {
             key={`faq-item-${index}`}
             item={item}
             index={index}
-            value={`item-${index}`}
+            value={`item-${columnIndex}-${index}`}
           />
         ))}
       </Accordion>
-    </div>
+    </motion.div>
   );
 };
 
@@ -71,19 +109,31 @@ const FaqSection: React.FC = () => {
 
   return (
     <section className="bg-gray-50 py-12">
-      <Card className="maxScreen mx-auto shadow-sm border-0">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-2xl font-semibold">
-            Booking flights with Skyscanner
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-wrap -mx-4">
-            <FaqColumn items={faqColumn1} />
-            <FaqColumn items={faqColumn2} />
-          </div>
-        </CardContent>
-      </Card>
+      <motion.div
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, ease: "easeOut" }}
+      >
+        <Card className="maxScreen mx-auto shadow-sm border-0">
+          <CardHeader className="pb-2">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+            >
+              <CardTitle className="text-2xl font-semibold">
+                Booking flights with Skyscanner
+              </CardTitle>
+            </motion.div>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-wrap -mx-4">
+              <FaqColumn items={faqColumn1} columnIndex={0} />
+              <FaqColumn items={faqColumn2} columnIndex={1} />
+            </div>
+          </CardContent>
+        </Card>
+      </motion.div>
     </section>
   );
 };

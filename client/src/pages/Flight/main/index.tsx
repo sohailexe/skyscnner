@@ -6,14 +6,6 @@ import { flightsTips } from "@/data/tipsdata";
 import FlightDealList from "./Flight-deals/flight-deals-list";
 import FeatureShowcase from "@/components/FeaturesShowcase";
 import { flightFeatures } from "@/data/featuresData";
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
 
 const FlightPage = () => {
   return (
@@ -21,19 +13,6 @@ const FlightPage = () => {
       <PagesHeader image={headerImg} heading="Find your Flight">
         <HomeSearchForm />
       </PagesHeader>
-
-      <Breadcrumb className="maxScreen mt-6 text-2xl">
-        <BreadcrumbList>
-          <BreadcrumbItem>
-            <BreadcrumbLink href="/">Home</BreadcrumbLink>
-          </BreadcrumbItem>
-          <BreadcrumbSeparator />
-
-          <BreadcrumbItem>
-            <BreadcrumbPage>Flight</BreadcrumbPage>
-          </BreadcrumbItem>
-        </BreadcrumbList>
-      </Breadcrumb>
 
       <Tips TipsData={flightsTips} />
       <FlightDealList />
