@@ -26,6 +26,17 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+  --color-primary-50: var(--primary-50);
+  --color-primary-100: var(--primary-100);
+  --color-primary-200: var(--primary-200);
+  --color-primary-300: var(--primary-300);
+  --color-primary-400: var(--primary-400);
+  --color-primary-500: var(--primary-500);
+  --color-primary-600: var(--primary-600);
+  --color-primary-700: var(--primary-700);
+  --color-primary-800: var(--primary-800);
+  --color-primary-900: var(--primary-900);
+  --color-primary-950: var(--primary-950);
   --color-chart-1: var(--chart-1);
   --color-chart-2: var(--chart-2);
   --color-chart-3: var(--chart-3);
@@ -66,6 +77,17 @@
   --border: oklch(0.922 0 0);
   --input: oklch(0.922 0 0);
   --ring: oklch(0.708 0 0);
+  --primary-50: "#eef4ff";
+  --primary-100: "#d9e5ff";
+  --primary-200: "#bcd3ff";
+  --primary-300: "#8bb7ff";
+  --primary-400: "#5390ff";
+  --primary-500: "#2970ff";
+  --primary-600: "#0770e3";
+  --primary-700: "#0058c7";
+  --primary-800: "#0447a3";
+  --primary-900: "#073e85";
+  --primary-950: "#042761";
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.398 0.07 227.392);
@@ -129,5 +151,30 @@
   }
   .maxScreen {
     @apply mx-4 max-w-7xl  lg:mx-auto  px-5;
+  }
+
+  /* auth */
+  .auth-input {
+    @apply w-full px-4 py-3 rounded-md border border-gray-300 focus:outline-none 
+    focus:ring-2 focus:ring-primary-600 focus:border-transparent 
+    transition-all duration-200 bg-white/80 backdrop-blur-sm;
+  }
+  .auth-button {
+    @apply w-full py-3 px-4  bg-light-blue 
+    text-white font-medium rounded-md 
+    transition-all duration-200 transform hover:scale-[1.02] active:scale-[0.98]
+    focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2;
+  }
+  .auth-card {
+    @apply bg-white/80 backdrop-blur-md rounded-xl p-8 shadow-lg 
+    border border-white/30 w-full max-w-md transition-all duration-300;
+  }
+  .auth-link {
+    @apply text-primary-700 hover:text-primary-800 font-medium 
+    transition-all duration-200;
+  }
+
+  .input-error {
+    @apply text-red-500 text-sm mt-1;
   }
 }
