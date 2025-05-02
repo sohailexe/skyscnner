@@ -24,7 +24,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { faCircle as faRegularCircle } from "@fortawesome/free-regular-svg-icons";
 import { BookAIcon } from "lucide-react";
-import hotelList from "@/db/Hotels";
+import hotelList from "@/data/Hotels";
 import { Link } from "react-router";
 
 interface StarListProps {

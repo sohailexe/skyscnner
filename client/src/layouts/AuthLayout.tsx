@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Outlet } from "react-router-dom";
 import { motion } from "framer-motion";
-import Logo from "../components/auth/components/Logo";
+import Logo from "../components/Logo";
 
 const travelImageUrls: string[] = [
   "https://images.pexels.com/photos/3155666/pexels-photo-3155666.jpeg",

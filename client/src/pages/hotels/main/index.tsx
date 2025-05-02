@@ -3,12 +3,12 @@ import FastFacts from "@/components/fast-facts/FastFacts";
 import HotelBrands from "@/pages/hotels/main/HotelBrands";
 import Tips from "@/components/Tips/Tips";
 import FeatureShowcase from "@/components/FeaturesShowcase";
-import { hotelTips } from "@/db/tipsdata";
-import { hotelFeatures } from "@/db/featuresData";
+import { hotelTips } from "@/data/tipsdata";
+import { hotelFeatures } from "@/data/featuresData";
 import PagesHeader from "@/components/PagesHeader";
 import headerImg from "@/assets/images/hotelspage-banner.webp";
 import HotelSearchBar from "@/pages/hotels/main/HotelSearchBar";
-import { hotelFacts } from "@/db/facts";
+import { hotelFacts } from "@/data/facts";
 import {
   Breadcrumb,
   BreadcrumbItem,

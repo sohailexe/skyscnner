@@ -6,7 +6,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import faqData from "@/db/faqs";
+import faqData from "@/data/faqs";
 
 // Types definition
 interface FaqItemType {

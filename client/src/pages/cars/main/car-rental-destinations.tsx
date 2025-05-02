@@ -14,7 +14,7 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel";
 import Autoplay from "embla-carousel-autoplay";
-import carList from "@/db/Hotels";
+import carList from "@/data/Hotels";
 
 const CarRentalDestination: React.FC = () => (
   <section className="maxScreen py-8">

@@ -2,10 +2,10 @@ import PagesHeader from "@/components/PagesHeader";
 import HomeSearchForm from "@/pages/home/main/HomeSearchForm";
 import headerImg from "@/assets/images/Flights-hero.webp";
 import Tips from "@/components/Tips/Tips";
-import { flightsTips } from "@/db/tipsdata";
+import { flightsTips } from "@/data/tipsdata";
 import FlightDealList from "./Flight-deals/flight-deals-list";
 import FeatureShowcase from "@/components/FeaturesShowcase";
-import { flightFeatures } from "@/db/featuresData";
+import { flightFeatures } from "@/data/featuresData";
 import {
   Breadcrumb,
   BreadcrumbItem,

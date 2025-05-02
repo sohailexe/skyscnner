@@ -1,187 +1,98 @@
-import React, { useState } from "react";
-import { Calendar } from "@/components/calender";
+import { useState } from "react";
+import { Calendar, Search } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Search } from "lucide-react";
+import { Calendar as CalendarComponent } from "@/components/calender";
 
-export default function HotelSearchBar() {
-  // State management for form fields
-  const [checkIn, _] = useState<Date | undefined>(new Date("2025-04-29"));
-  const [checkOut, setCheckOut] = useState<Date | undefined>(
-    new Date("2025-04-30")
-  );
-  const [destination, setDestination] = useState("");
-  const [guests, setGuests] = useState("2 adults, 1 room");
+interface FormData {
+  destination: string;
+  checkInDate: Date;
+  checkOutDate: Date;
+  guests: string;
+  freeCancellation: boolean;
+  fourStars: boolean;
+  threeStars: boolean;
+}
 
-  // State management for filters
-  const [freeCancellation, setFreeCancellation] = useState(true);
-  const [fourStars, setFourStars] = useState(false);
-  const [threeStars, setThreeStars] = useState(true);
+interface IsOpenState {
+  checkIn: boolean;
+  checkOut: boolean;
+  guests: boolean;
+}
 
-  // Format date to dd/mm/yyyy
-  const formatDate = (date: Date | undefined): string => {
-    if (!date) return "";
-    const day = String(date.getDate()).padStart(2, "0");
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const year = date.getFullYear();
-    return `${day}/${month}/${year}`;
-  };
+export default function HotelSearchForm() {
+  // State management with TypeScript types
+  const [formData, setFormData] = useState<FormData>({
+    destination: "",
+    checkInDate: new Date(),
+    checkOutDate: new Date(new Date().setDate(new Date().getDate() + 1)),
+    guests: "2 adults, 1 room",
+    freeCancellation: true,
+    fourStars: false,
+    threeStars: true,
+  });
 
-  // Handle search submission
-  const handleSearch = () => {
-    // Implementation for search functionality
-    console.log({
-      destination,
-      checkIn,
-      checkOut,
-      guests,
-      filters: {
-        freeCancellation,
-        fourStars,
-        threeStars,
-      },
+  const [isOpen, setIsOpen] = useState<IsOpenState>({
+    checkIn: false,
+    checkOut: false,
+    guests: false,
+  });
+
+  const [adults, setAdults] = useState<number>(2);
+  const [rooms, setRooms] = useState<number>(1);
+
+  // Event handler types
+  const handleTextChange =
+    (field: keyof FormData) => (e: React.ChangeEvent<HTMLInputElement>) => {
+      setFormData((prev) => ({ ...prev, [field]: e.target.value }));
+    };
+
+  const handleDateChange =
+    (field: keyof Pick<FormData, "checkInDate" | "checkOutDate">) =>
+    (date: Date | undefined) => {
+      if (!date) return;
+      setFormData((prev) => ({ ...prev, [field]: date }));
+      if (field === "checkInDate")
+        setIsOpen((prev) => ({ ...prev, checkIn: false }));
+      if (field === "checkOutDate")
+        setIsOpen((prev) => ({ ...prev, checkOut: false }));
+    };
+
+  const handleCheckboxChange =
+    (
+      field: keyof Pick<
+        FormData,
+        "freeCancellation" | "fourStars" | "threeStars"
+      >
+    ) =>
+    () => {
+      setFormData((prev) => ({ ...prev, [field]: !prev[field] }));
+    };
+
+  // Format date with TypeScript return type
+  const formatDate = (date: Date): string => {
+    return date.toLocaleDateString("en-US", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
     });
   };
 
-  return (
-    <div className="mx-auto bg-dark-blue p-6 rounded-3xl text-white w-fit">
-      <div>
-        <h2 className="text-sm mb-2">Where do you want to stay?</h2>
+  const applyGuestSelection = () => {
+    setFormData((prev) => ({
+      ...prev,
+      guests: `${adults} adults, ${rooms} room${rooms > 1 ? "s" : ""}`,
+    }));
+    setIsOpen((prev) => ({ ...prev, guests: false }));
+  };
 
-        {/* Search form grid */}
-        <div className="flex flex-col md:flex-row gap-2 mb-4">
-          {/* Destination input */}
-          <Input
-            placeholder="Enter destination or hotel name"
-            value={destination}
-            onChange={(e) => setDestination(e.target.value)}
-            className="flex-grow bg-white text-black"
-          />
-
-          {/* Check-in date selector */}
-          <div className="w-full md:w-40">
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className="w-full justify-start bg-white text-black hover:bg-gray-100"
-                >
-                  <div className="text-xs text-gray-500 absolute top-0 left-2">
-                    Check-in
-                  </div>
-                  <div className="mt-4">{formatDate(checkIn)}</div>
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                {/* <Calendar
-                  mode="single"
-                  selected={checkIn}
-                  onSelect={setCheckIn}
-                  initialFocus
-                /> */}
-              </PopoverContent>
-            </Popover>
-          </div>
-
-          {/* Check-out date selector */}
-          <div className="w-full md:w-40">
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className="w-full justify-start bg-white text-black hover:bg-gray-100"
-                >
-                  <div className="text-xs text-gray-500 absolute top-0 left-2">
-                    Check-out
-                  </div>
-                  <div className="mt-4">{formatDate(checkOut)}</div>
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <Calendar
-                  mode="single"
-                  selected={checkOut}
-                  onSelect={setCheckOut}
-                  initialFocus
-                />
-              </PopoverContent>
-            </Popover>
-          </div>
-
-          {/* Guests dropdown */}
-          <div className="w-full md:w-44 relative">
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className="w-full justify-start bg-white text-black hover:bg-gray-100"
-                >
-                  <div className="text-xs text-gray-500 absolute top-0 left-2">
-                    Guests and rooms
-                  </div>
-                  <div className="mt-4">{guests}</div>
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-64 p-4" align="start">
-                <GuestsRoomsSelector guests={guests} setGuests={setGuests} />
-              </PopoverContent>
-            </Popover>
-          </div>
-        </div>
-
-        {/* Filters row */}
-        <div className="flex items-center flex-wrap gap-4 mb-4">
-          <div className="text-sm whitespace-nowrap">Popular filters:</div>
-          <FilterCheckbox
-            id="free-cancellation"
-            label="Free cancellation"
-            checked={freeCancellation}
-            onChange={() => setFreeCancellation(!freeCancellation)}
-          />
-          <FilterCheckbox
-            id="four-stars"
-            label="4 stars"
-            checked={fourStars}
-            onChange={() => setFourStars(!fourStars)}
-          />
-          <FilterCheckbox
-            id="three-stars"
-            label="3 stars"
-            checked={threeStars}
-            onChange={() => setThreeStars(!threeStars)}
-          />
-        </div>
-
-        {/* Search button */}
-        <div className="flex justify-end">
-          <Button
-            className="bg-blue-600 hover:bg-blue-700 text-white"
-            onClick={handleSearch}
-          >
-            <span>Search hotels</span> <Search className="ml-2 h-4 w-4" />
-          </Button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// Component for the guests and rooms selector popover content
-function GuestsRoomsSelector({
-  setGuests,
-}: {
-  guests: string;
-  setGuests: React.Dispatch<React.SetStateAction<string>>;
-}) {
-  const [adults, setAdults] = useState(2);
-  const [rooms, setRooms] = useState(1);
-
+  // Counter controls with TypeScript types
   const increment = (
     value: number,
     setter: React.Dispatch<React.SetStateAction<number>>
@@ -198,89 +109,212 @@ function GuestsRoomsSelector({
     }
   };
 
-  const applySelection = () => {
-    setGuests(`${adults} adults, ${rooms} room${rooms > 1 ? "s" : ""}`);
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    console.log("Search data:", formData);
   };
 
+  // JSX remains mostly the same with added type safety
   return (
-    <div className="space-y-4">
-      <div>
-        <h3 className="font-medium mb-2">Guests</h3>
-        <div className="flex justify-between items-center">
-          <span>Adults</span>
-          <div className="flex items-center gap-2">
-            <Button
-              size="sm"
-              variant="outline"
-              className="h-8 w-8 p-0"
-              onClick={() => decrement(adults, setAdults)}
-              disabled={adults <= 1}
-            >
-              -
-            </Button>
-            <span>{adults}</span>
-            <Button
-              size="sm"
-              variant="outline"
-              className="h-8 w-8 p-0"
-              onClick={() => increment(adults, setAdults)}
-            >
-              +
-            </Button>
+    <div className="bg-dark-blue p-6 md:p-8 rounded-3xl text-white max-w-6xl mx-auto shadow-lg">
+      <div className="w-full grid grid-cols-1 md:grid-cols-4 xl:grid-cols-9 gap-2 items-end">
+        {/* Destination input */}
+        <div className="md:col-span-2  ">
+          <div className="relative">
+            <label className="text-xs text-gray-300 mb-1 block">
+              Destination
+            </label>
+            <Input
+              placeholder="Enter destination or hotel name"
+              value={formData.destination}
+              onChange={handleTextChange("destination")}
+              className="bg-white text-black h-12 "
+            />
           </div>
         </div>
-      </div>
-      <div>
-        <h3 className="font-medium mb-2">Rooms</h3>
-        <div className="flex justify-between items-center">
-          <span>Rooms</span>
-          <div className="flex items-center gap-2">
-            <Button
-              size="sm"
-              variant="outline"
-              className="h-8 w-8 p-0"
-              onClick={() => decrement(rooms, setRooms)}
-              disabled={rooms <= 1}
-            >
-              -
-            </Button>
-            <span>{rooms}</span>
-            <Button
-              size="sm"
-              variant="outline"
-              className="h-8 w-8 p-0"
-              onClick={() => increment(rooms, setRooms)}
-            >
-              +
-            </Button>
-          </div>
+        {/* Guests dropdown */}
+        <div className="md:col-span-2">
+          <label className="text-xs text-gray-300 mb-1 block">
+            Guests & Rooms
+          </label>
+          <Popover
+            open={isOpen.guests}
+            onOpenChange={(open: boolean) =>
+              setIsOpen((prev) => ({ ...prev, guests: open }))
+            }
+          >
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                className="w-full justify-start bg-white text-black hover:bg-gray-100 h-12"
+              >
+                {formData.guests}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-64 p-4" align="start">
+              <div className="space-y-4">
+                <div>
+                  <h3 className="font-medium mb-2">Guests</h3>
+                  <div className="flex justify-between items-center">
+                    <span>Adults</span>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-8 w-8 p-0"
+                        onClick={() => decrement(adults, setAdults)}
+                        disabled={adults <= 1}
+                      >
+                        -
+                      </Button>
+                      <span>{adults}</span>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-8 w-8 p-0"
+                        onClick={() => increment(adults, setAdults)}
+                      >
+                        +
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <h3 className="font-medium mb-2">Rooms</h3>
+                  <div className="flex justify-between items-center">
+                    <span>Rooms</span>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-8 w-8 p-0"
+                        onClick={() => decrement(rooms, setRooms)}
+                        disabled={rooms <= 1}
+                      >
+                        -
+                      </Button>
+                      <span>{rooms}</span>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-8 w-8 p-0"
+                        onClick={() => increment(rooms, setRooms)}
+                      >
+                        +
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+                <Button className="w-full" onClick={applyGuestSelection}>
+                  Apply
+                </Button>
+              </div>
+            </PopoverContent>
+          </Popover>
         </div>
-      </div>
-      <Button className="w-full" onClick={applySelection}>
-        Apply
-      </Button>
-    </div>
-  );
-}
+        {/* Check-in date selector */}
+        <div className="md:col-span-1 w-full xl:col-span-2">
+          <label className="text-xs text-gray-300 mb-1 block">Check-in</label>
+          <Popover
+            open={isOpen.checkIn}
+            onOpenChange={(open: boolean) =>
+              setIsOpen((prev) => ({ ...prev, checkIn: open }))
+            }
+          >
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                className="w-full justify-start bg-white text-black hover:bg-gray-100 h-12"
+              >
+                <Calendar className="mr-2 h-4 w-4" />
+                {formatDate(formData.checkInDate)}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <CalendarComponent
+                mode="single"
+                selected={formData.checkInDate}
+                onSelect={handleDateChange("checkInDate")}
+                initialFocus
+              />
+            </PopoverContent>
+          </Popover>
+        </div>
 
-// Reusable filter checkbox component
-function FilterCheckbox({
-  id,
-  label,
-  checked,
-  onChange,
-}: {
-  id: string;
-  label: string;
-  checked: boolean;
-  onChange: () => void;
-}) {
-  return (
-    <div className="flex items-center gap-1">
-      <Checkbox id={id} checked={checked} onCheckedChange={onChange} />
-      <label htmlFor={id} className="text-sm ml-1 cursor-pointer">
-        {label}
-      </label>
+        {/* Check-out date selector */}
+        <div className="md:col-span-1 xl:col-span-2 ">
+          <label className="text-xs text-gray-300 mb-1 block">Check-out</label>
+          <Popover
+            open={isOpen.checkOut}
+            onOpenChange={(open: boolean) =>
+              setIsOpen((prev) => ({ ...prev, checkOut: open }))
+            }
+          >
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                className="w-full justify-start bg-white text-black hover:bg-gray-100 h-12"
+              >
+                <Calendar className="mr-2 h-4 w-4" />
+                {formatDate(formData.checkOutDate)}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <CalendarComponent
+                mode="single"
+                selected={formData.checkOutDate}
+                onSelect={handleDateChange("checkOutDate")}
+                initialFocus
+              />
+            </PopoverContent>
+          </Popover>
+        </div>
+
+        {/* Search Button */}
+        <div className="mt-4 md:mt-0 md:col-span-2 xl:col-span-1">
+          <Button
+            onClick={handleSearch}
+            className="bg-blue-600 hover:bg-blue-700 text-white w-full h-12"
+          >
+            <Search className="mr-1 h-4 " />
+            Search Hotels
+          </Button>
+        </div>
+      </div>
+
+      {/* Filter options */}
+      <div className="flex flex-wrap gap-4 mt-4">
+        <div className="flex items-center gap-2">
+          <Checkbox
+            id="free-cancellation"
+            checked={formData.freeCancellation}
+            onCheckedChange={handleCheckboxChange("freeCancellation")}
+          />
+          <label htmlFor="free-cancellation" className="text-sm">
+            Free cancellation
+          </label>
+        </div>
+        <div className="flex items-center gap-2">
+          <Checkbox
+            id="four-stars"
+            checked={formData.fourStars}
+            onCheckedChange={handleCheckboxChange("fourStars")}
+          />
+          <label htmlFor="four-stars" className="text-sm">
+            4+ stars
+          </label>
+        </div>
+        <div className="flex items-center gap-2">
+          <Checkbox
+            id="three-stars"
+            checked={formData.threeStars}
+            onCheckedChange={handleCheckboxChange("threeStars")}
+          />
+          <label htmlFor="three-stars" className="text-sm">
+            3+ stars
+          </label>
+        </div>
+      </div>
     </div>
   );
 }
