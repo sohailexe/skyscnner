@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Outlet } from "react-router-dom";
 import { motion } from "framer-motion";
 import Logo from "../components/Logo";
+import Navbar from "@/components/Navbar/Navbar";
 
 const travelImageUrls: string[] = [
   "https://images.pexels.com/photos/3155666/pexels-photo-3155666.jpeg",
@@ -37,7 +38,7 @@ const AuthLayout: React.FC = () => {
 
       <div className="relative z-10 h-full flex flex-col items-center">
         {/* Header */}
-
+        <Navbar />
         <Logo className="mt-8" />
         {/* Main Content */}
         <div className="flex-1 w-full flex items-center justify-center p-6">

@@ -79,7 +79,8 @@ const PagesHeader = ({ image, heading, children }: PagesHeaderProps) => {
 
   return (
     <>
-      <div className="relative h-[60vh] w-full overflow-hidden shadow-xl">
+      <div className="py-12 bg-dark-blue"></div>
+      <div className="relative h-[600px] w-full   overflow-hidden shadow-xl">
         {/* Background Image with enhanced animation */}
         <motion.div
           className="absolute inset-0 z-0 bg-cover bg-center"
