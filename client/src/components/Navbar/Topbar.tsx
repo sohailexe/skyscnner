@@ -1,21 +1,21 @@
+import { Link } from "react-router";
 import { Button } from "../ui/button";
 import { DropdownOptions } from "./Dropdown-options";
-import { Link } from "react-router";
-import logo from "@/assets/skyscanner-seeklogo.png";
+import Logo from "@/auth/components/Logo";
 export const Topbar = () => {
   return (
     <div className="maxScreen flex justify-between py-2">
       <div>
-        <Link to={"/"} className={`text-2xl font-bold`}>
-          <img src={logo} alt="logo" className="w-36 invert brightness-0" />
-        </Link>
+        <Logo />
       </div>
       <div>
         <ul className="flex gap-1">
           <li>
-            <Button className="" variant={"ghost"}>
-              Login{" "}
-            </Button>
+            <Link to={"/login"}>
+              <Button className="" variant={"ghost"}>
+                Login{" "}
+              </Button>
+            </Link>
           </li>
           <li>
             <DropdownOptions />

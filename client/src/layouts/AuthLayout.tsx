@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Outlet } from "react-router-dom";
 import { motion } from "framer-motion";
-import { PlaneTakeoff } from "lucide-react";
+import Logo from "../auth/components/Logo";
 
 const travelImageUrls: string[] = [
   "https://images.pexels.com/photos/3155666/pexels-photo-3155666.jpeg",
@@ -37,22 +37,8 @@ const AuthLayout: React.FC = () => {
 
       <div className="relative z-10 h-full flex flex-col items-center">
         {/* Header */}
-        <motion.header
-          className="w-full p-6 flex justify-center"
-          initial={{ y: -20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.5 }}
-        >
-          <motion.div
-            className="flex items-center gap-2"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            <PlaneTakeoff size={32} className="text-white" />
-            <h1 className="text-2xl font-bold text-white">skyscanner</h1>
-          </motion.div>
-        </motion.header>
 
+        <Logo className="mt-8" />
         {/* Main Content */}
         <div className="flex-1 w-full flex items-center justify-center p-6">
           <Outlet />

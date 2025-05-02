@@ -3,22 +3,28 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import FormInput from "./components/FormInput";
 import SocialLogin from "./components/SocialLogin";
-import useForm from "./hooks/useForm";
+import useForm from "../hooks/useForm";
 
-interface LoginValues {
+/**
+ * Interface for login form values
+ */
+interface LoginFormValues {
   email: string;
   password: string;
   rememberMe: boolean;
 }
 
+/**
+ * Login page component
+ */
 const Login: React.FC = () => {
-  const initialValues: LoginValues = {
+  const initialValues: LoginFormValues = {
     email: "",
     password: "",
     rememberMe: false,
   };
 
-  const validate = (values: LoginValues) => {
+  const validate = (values: LoginFormValues): Record<string, string> => {
     const errors: Record<string, string> = {};
 
     if (!values.email) {
@@ -36,7 +42,7 @@ const Login: React.FC = () => {
     return errors;
   };
 
-  const handleSubmit = (values: LoginValues) => {
+  const handleSubmit = (values: LoginFormValues): void => {
     console.log("Login values:", values);
     // Here you would typically call an API to authenticate the user
     alert("Login successful! (This is a demo)");
@@ -45,10 +51,11 @@ const Login: React.FC = () => {
   const {
     values,
     errors,
+    isSubmitting,
     handleChange,
     handleBlur,
     handleSubmit: submitForm,
-  } = useForm({
+  } = useForm<LoginFormValues>({
     initialValues,
     validate,
     onSubmit: handleSubmit,
@@ -62,7 +69,7 @@ const Login: React.FC = () => {
       transition={{ duration: 0.5 }}
     >
       <motion.div
-        className="auth-card"
+        className="p-6 bg-white rounded-lg shadow-lg"
         whileHover={{
           boxShadow:
             "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
@@ -78,9 +85,15 @@ const Login: React.FC = () => {
           <p className="text-gray-600 mt-2">Sign in to access your account</p>
         </motion.div>
 
-        <form onSubmit={submitForm}>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            submitForm();
+          }}
+        >
           <FormInput
             id="email"
+            name="email"
             label="Email"
             type="email"
             placeholder="you@example.com"
@@ -89,10 +102,12 @@ const Login: React.FC = () => {
             onBlur={handleBlur}
             error={errors.email}
             required
+            autoComplete="email"
           />
 
           <FormInput
             id="password"
+            name="password"
             label="Password"
             type="password"
             placeholder="••••••••"
@@ -101,6 +116,7 @@ const Login: React.FC = () => {
             onBlur={handleBlur}
             error={errors.password}
             required
+            autoComplete="current-password"
           />
 
           <div className="flex items-center justify-between mb-6">
@@ -109,16 +125,9 @@ const Login: React.FC = () => {
                 id="rememberMe"
                 name="rememberMe"
                 type="checkbox"
-                className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
-                checked={values.rememberMe}
-                onChange={(e) =>
-                  handleChange({
-                    target: {
-                      name: "rememberMe",
-                      value: e.target.checked,
-                    },
-                  } as unknown as React.ChangeEvent<HTMLInputElement>)
-                }
+                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                checked={values.rememberMe as boolean}
+                onChange={handleChange}
               />
               <label
                 htmlFor="rememberMe"
@@ -129,28 +138,35 @@ const Login: React.FC = () => {
             </div>
 
             <div className="text-sm">
-              <a href="#" className="auth-link">
+              <Link
+                to="/forgot-password"
+                className="text-blue-600 hover:underline"
+              >
                 Forgot password?
-              </a>
+              </Link>
             </div>
           </div>
 
           <motion.button
             type="submit"
-            className="auth-button"
+            className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
+            disabled={isSubmitting}
           >
-            Sign in
+            {isSubmitting ? "Signing in..." : "Sign in"}
           </motion.button>
         </form>
 
-        <SocialLogin />
+        {/* Assuming SocialLogin component exists */}
+        <div className="mt-6">
+          <SocialLogin />
+        </div>
 
         <div className="mt-6 text-center">
           <p className="text-sm text-gray-600">
             Don't have an account?{" "}
-            <Link to="/register" className="auth-link">
+            <Link to="/register" className="text-blue-600 hover:underline">
               Sign up
             </Link>
           </p>

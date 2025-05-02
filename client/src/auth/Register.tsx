@@ -2,10 +2,12 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import FormInput from "./components/FormInput";
-import SocialLogin from "./components/SocialLogin";
-import useForm from "./hooks/useForm";
+import useForm from "../hooks/useForm";
 
-interface RegisterValues {
+/**
+ * Interface for registration form values
+ */
+interface RegisterFormValues {
   firstName: string;
   lastName: string;
   email: string;
@@ -14,8 +16,11 @@ interface RegisterValues {
   agreeTerms: boolean;
 }
 
-const Register: React.FC = () => {
-  const initialValues: RegisterValues = {
+/**
+ * Registration form component
+ */
+const RegisterForm: React.FC = () => {
+  const initialValues: RegisterFormValues = {
     firstName: "",
     lastName: "",
     email: "",
@@ -24,7 +29,7 @@ const Register: React.FC = () => {
     agreeTerms: false,
   };
 
-  const validate = (values: RegisterValues) => {
+  const validate = (values: RegisterFormValues): Record<string, string> => {
     const errors: Record<string, string> = {};
 
     if (!values.firstName) {
@@ -63,7 +68,7 @@ const Register: React.FC = () => {
     return errors;
   };
 
-  const handleSubmit = (values: RegisterValues) => {
+  const handleSubmit = (values: RegisterFormValues): void => {
     console.log("Register values:", values);
     // Here you would typically call an API to create the user
     alert("Registration successful! (This is a demo)");
@@ -72,10 +77,11 @@ const Register: React.FC = () => {
   const {
     values,
     errors,
+    isSubmitting,
     handleChange,
     handleBlur,
     handleSubmit: submitForm,
-  } = useForm({
+  } = useForm<RegisterFormValues>({
     initialValues,
     validate,
     onSubmit: handleSubmit,
@@ -89,7 +95,7 @@ const Register: React.FC = () => {
       transition={{ duration: 0.5 }}
     >
       <motion.div
-        className="auth-card"
+        className="p-6 bg-white rounded-lg shadow-lg"
         whileHover={{
           boxShadow:
             "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
@@ -101,16 +107,20 @@ const Register: React.FC = () => {
           animate={{ scale: 1, opacity: 1 }}
           transition={{ delay: 0.2 }}
         >
-          <h2 className="text-3xl font-bold text-gray-800">Create account</h2>
-          <p className="text-gray-600 mt-2">
-            Join Skyscanner to start your journey
-          </p>
+          <h2 className="text-2xl font-bold text-gray-800">Create account</h2>
+          <p className="text-gray-600 mt-2">Join us to start your journey</p>
         </motion.div>
 
-        <form onSubmit={submitForm}>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            submitForm();
+          }}
+        >
           <div className="grid grid-cols-2 gap-4">
             <FormInput
               id="firstName"
+              name="firstName"
               label="First Name"
               type="text"
               placeholder="John"
@@ -119,10 +129,12 @@ const Register: React.FC = () => {
               onBlur={handleBlur}
               error={errors.firstName}
               required
+              autoComplete="given-name"
             />
 
             <FormInput
               id="lastName"
+              name="lastName"
               label="Last Name"
               type="text"
               placeholder="Doe"
@@ -131,11 +143,13 @@ const Register: React.FC = () => {
               onBlur={handleBlur}
               error={errors.lastName}
               required
+              autoComplete="family-name"
             />
           </div>
 
           <FormInput
             id="email"
+            name="email"
             label="Email"
             type="email"
             placeholder="you@example.com"
@@ -144,10 +158,12 @@ const Register: React.FC = () => {
             onBlur={handleBlur}
             error={errors.email}
             required
+            autoComplete="email"
           />
 
           <FormInput
             id="password"
+            name="password"
             label="Password"
             type="password"
             placeholder="••••••••"
@@ -156,10 +172,12 @@ const Register: React.FC = () => {
             onBlur={handleBlur}
             error={errors.password}
             required
+            autoComplete="new-password"
           />
 
           <FormInput
             id="confirmPassword"
+            name="confirmPassword"
             label="Confirm Password"
             type="password"
             placeholder="••••••••"
@@ -168,6 +186,7 @@ const Register: React.FC = () => {
             onBlur={handleBlur}
             error={errors.confirmPassword}
             required
+            autoComplete="new-password"
           />
 
           <div className="mb-6">
@@ -177,31 +196,31 @@ const Register: React.FC = () => {
                   id="agreeTerms"
                   name="agreeTerms"
                   type="checkbox"
-                  className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                   checked={values.agreeTerms}
-                  onChange={(e) =>
-                    handleChange({
-                      target: {
-                        name: "agreeTerms",
-                        value: e.target.checked,
-                      },
-                    } as React.ChangeEvent<HTMLInputElement>)
-                  }
+                  onChange={handleChange}
                 />
               </div>
               <div className="ml-3">
                 <label htmlFor="agreeTerms" className="text-sm text-gray-700">
                   I agree to the{" "}
-                  <a href="#" className="auth-link">
+                  <Link to="/terms" className="text-blue-600 hover:underline">
                     Terms of Service
-                  </a>{" "}
+                  </Link>{" "}
                   and{" "}
-                  <a href="#" className="auth-link">
+                  <Link to="/privacy" className="text-blue-600 hover:underline">
                     Privacy Policy
-                  </a>
+                  </Link>
                 </label>
                 {errors.agreeTerms && (
-                  <p className="input-error">{errors.agreeTerms}</p>
+                  <motion.p
+                    className="mt-1 text-sm text-red-600"
+                    initial={{ opacity: 0, y: -5 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    {errors.agreeTerms}
+                  </motion.p>
                 )}
               </div>
             </div>
@@ -209,20 +228,19 @@ const Register: React.FC = () => {
 
           <motion.button
             type="submit"
-            className="auth-button"
+            className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
+            disabled={isSubmitting}
           >
-            Create account
+            {isSubmitting ? "Creating account..." : "Create account"}
           </motion.button>
         </form>
-
-        <SocialLogin />
 
         <div className="mt-6 text-center">
           <p className="text-sm text-gray-600">
             Already have an account?{" "}
-            <Link to="/login" className="auth-link">
+            <Link to="/login" className="text-blue-600 hover:underline">
               Sign in
             </Link>
           </p>
@@ -232,4 +250,4 @@ const Register: React.FC = () => {
   );
 };
 
-export default Register;
+export default RegisterForm;

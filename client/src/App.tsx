@@ -1,10 +1,5 @@
-import {
-  BrowserRouter as Router,
-  Routes,
-  Route,
-  Navigate,
-} from "react-router-dom";
-import MainLayout from "./MainLayout";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import MainLayout from "./layouts/MainLayout";
 import HomePage from "./pages/home/main";
 import HotelPage from "./pages/hotels/main";
 import FlightPage from "./pages/Flight/main";
@@ -13,7 +8,7 @@ import HotelInfoPage from "./pages/hotels/hotel-info-page";
 import FlightResult from "./pages/Flight/flight-search";
 import Login from "./auth/Login";
 import Register from "./auth/Register"; // Ensure this exists
-import AuthLayout from "./auth/layouts/AuthLayout";
+import AuthLayout from "./layouts/AuthLayout";
 
 const App = () => {
   return (
@@ -21,13 +16,12 @@ const App = () => {
       <Routes>
         {/* Auth Routes */}
         <Route path="/" element={<AuthLayout />}>
-          <Route index element={<Navigate to="home" replace />} />
           <Route path="login" element={<Login />} />
           <Route path="register" element={<Register />} />
         </Route>
 
         {/* Main App Routes */}
-        <Route path="/home" element={<MainLayout />}>
+        <Route path="/" element={<MainLayout />}>
           <Route index element={<HomePage />} />
           <Route path="flights" element={<FlightPage />} />
           <Route path="flight/search" element={<FlightResult />} />
