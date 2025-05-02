@@ -99,7 +99,7 @@ const PagesHeader = ({ image, heading, children }: PagesHeaderProps) => {
 
         {/* Content Container with staggered children animations */}
         <motion.div
-          className="relative z-20 flex flex-col items-center justify-center h-full text-white text-center px-4"
+          className="relative z-20 flex flex-col items-center justify-center h-full text-white  px-4"
           initial="hidden"
           animate={isInView ? "visible" : "hidden"}
           variants={containerVariants}

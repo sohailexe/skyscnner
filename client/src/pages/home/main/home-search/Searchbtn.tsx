@@ -21,7 +21,7 @@ export const SearchButton = ({
     ) : (
       <>
         <Search className="h-5 w-5" />
-        <span>Search</span>
+        <span>Search </span>
       </>
     )}
   </Button>

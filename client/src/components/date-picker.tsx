@@ -22,7 +22,7 @@ interface DatePickerProps {
   endYear?: number;
   placeholder?: string;
   className?: string;
-  buttonRef?: React.RefObject<HTMLButtonElement>;
+  buttonRef?: React.RefObject<HTMLButtonElement | null>;
 }
 
 export function DatePicker({
