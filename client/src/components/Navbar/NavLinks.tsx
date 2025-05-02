@@ -3,6 +3,7 @@ import { faCar, faHotel, faPlane } from "@fortawesome/free-solid-svg-icons";
 import { Button } from "@/components/ui/button";
 import { Link, useLocation } from "react-router";
 import { cn } from "@/lib/utils";
+import { motion } from "framer-motion";
 
 const buttons = [
   {
@@ -22,12 +23,25 @@ const buttons = [
   },
 ];
 
+const containerVariants = {
+  hidden: {},
+  visible: {
+    transition: {
+      staggerChildren: 0.1,
+    },
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 10 },
+  visible: { opacity: 1, y: 0 },
+};
+
 export const NavLinks = () => {
   const { pathname } = useLocation();
 
   const isActive = (path: string) => {
     if (path === "/flights") {
-      // Active if it's NOT /cars or /hotels
       return pathname !== "/cars" && pathname !== "/hotels";
     }
     return pathname === path;
@@ -35,26 +49,36 @@ export const NavLinks = () => {
 
   return (
     <nav className="maxScreen">
-      <ul className="flex gap-2 py-2 pb-4">
+      <motion.ul
+        className="flex gap-2 py-2 pb-4"
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+      >
         {buttons.map(({ name, icon, path }, index) => (
-          <li key={index}>
+          <motion.li key={index} variants={itemVariants}>
             <Link to={path}>
-              <Button
-                className={cn(
-                  ` border rounded-4xl bg-transparent hover:bg-light-blue/50 hover:border-light-blue hover:text-white text-white`,
-                  isActive(path)
-                    ? "bg-light-blue  text-white border-light-blue"
-                    : ""
-                )}
-                variant="ghost"
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.97 }}
               >
-                <FontAwesomeIcon icon={icon} className="mr-2" />
-                {name}
-              </Button>
+                <Button
+                  className={cn(
+                    "border rounded-4xl bg-transparent hover:bg-light-blue/50 hover:border-light-blue hover:text-white text-white transition-all duration-200",
+                    isActive(path)
+                      ? "bg-light-blue text-white border-light-blue"
+                      : ""
+                  )}
+                  variant="ghost"
+                >
+                  <FontAwesomeIcon icon={icon} className="mr-2" />
+                  {name}
+                </Button>
+              </motion.div>
             </Link>
-          </li>
+          </motion.li>
         ))}
-      </ul>
+      </motion.ul>
     </nav>
   );
 };
