@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Calendar } from "@/components/ui/calendar";
+import { Calendar } from "@/components/calender";
 import {
   Popover,
   PopoverContent,
@@ -81,12 +81,12 @@ export default function HotelSearchBar() {
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="start">
-                <Calendar
+                {/* <Calendar
                   mode="single"
                   selected={checkIn}
                   onSelect={setCheckIn}
                   initialFocus
-                />
+                /> */}
               </PopoverContent>
             </Popover>
           </div>

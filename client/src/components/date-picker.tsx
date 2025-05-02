@@ -1,11 +1,7 @@
-"use client";
-
 import * as React from "react";
-import { format, getMonth, getYear, setMonth, setYear } from "date-fns";
-
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
+import { Calendar } from "@/components/calender";
 import {
   Popover,
   PopoverContent,
@@ -26,17 +22,17 @@ interface DatePickerProps {
   endYear?: number;
   placeholder?: string;
   className?: string;
-  buttonRef?: React.RefObject<HTMLButtonElement>; // Add ref for external access
+  buttonRef?: React.RefObject<HTMLButtonElement>;
 }
 
 export function DatePicker({
   date,
   onDateChange,
-  startYear = getYear(new Date()) - 1,
-  endYear = getYear(new Date()) + 2,
+  startYear = new Date().getFullYear() - 1,
+  endYear = new Date().getFullYear() + 2,
   placeholder = "Select date",
   className,
-  buttonRef, // Accept the buttonRef prop
+  buttonRef,
 }: DatePickerProps) {
   const months = [
     "January",
@@ -57,6 +53,36 @@ export function DatePicker({
     { length: endYear - startYear + 1 },
     (_, i) => startYear + i
   );
+
+  // Helper functions to replace date-fns
+  const getMonth = (date: Date) => {
+    return date.getMonth();
+  };
+
+  const getYear = (date: Date) => {
+    return date.getFullYear();
+  };
+
+  const setMonth = (date: Date, monthIndex: number) => {
+    const newDate = new Date(date);
+    newDate.setMonth(monthIndex);
+    return newDate;
+  };
+
+  const setYear = (date: Date, year: number) => {
+    const newDate = new Date(date);
+    newDate.setFullYear(year);
+    return newDate;
+  };
+
+  const format = (date: Date, formatStr: string) => {
+    // Simple formatter for "MMM dd, yyyy" format
+    const monthAbbr = months[date.getMonth()].substring(0, 3);
+    const day = date.getDate();
+    const year = date.getFullYear();
+
+    return `${monthAbbr} ${day < 10 ? "0" + day : day}, ${year}`;
+  };
 
   const handleMonthChange = (month: string) => {
     if (!date) {
@@ -91,7 +117,7 @@ export function DatePicker({
       <PopoverTrigger asChild>
         <Button
           variant="outline"
-          ref={buttonRef} // Use the forwarded ref here
+          ref={buttonRef}
           className={cn(
             "w-full justify-start text-left font-normal",
             !date && "text-gray-500",
