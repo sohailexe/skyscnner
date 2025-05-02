@@ -6,8 +6,8 @@ import FlightPage from "./pages/Flight/main";
 import CarsPage from "./pages/cars/main";
 import HotelInfoPage from "./pages/hotels/hotel-info-page";
 import FlightResult from "./pages/Flight/flight-search";
-import Login from "./auth/Login";
-import Register from "./auth/Register"; // Ensure this exists
+import Login from "./components/auth/Login";
+import Register from "./components/auth/Register"; // Ensure this exists
 import AuthLayout from "./layouts/AuthLayout";
 
 const App = () => {

@@ -1,7 +1,7 @@
 import { Link } from "react-router";
 import { Button } from "../ui/button";
 import { DropdownOptions } from "./Dropdown-options";
-import Logo from "@/auth/components/Logo";
+import Logo from "@/components/auth/components/Logo";
 export const Topbar = () => {
   return (
     <div className="maxScreen flex justify-between py-2">

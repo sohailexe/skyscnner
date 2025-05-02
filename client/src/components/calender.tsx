@@ -15,7 +15,7 @@ export interface CalendarProps {
 }
 
 export function Calendar({
-  mode = "single",
+  // mode = "single",
   selected,
   onSelect,
   month,

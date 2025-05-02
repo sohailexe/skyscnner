@@ -12,9 +12,7 @@ import { Search } from "lucide-react";
 
 export default function HotelSearchBar() {
   // State management for form fields
-  const [checkIn, setCheckIn] = useState<Date | undefined>(
-    new Date("2025-04-29")
-  );
+  const [checkIn, _] = useState<Date | undefined>(new Date("2025-04-29"));
   const [checkOut, setCheckOut] = useState<Date | undefined>(
     new Date("2025-04-30")
   );

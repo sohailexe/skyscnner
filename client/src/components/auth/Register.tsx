@@ -2,7 +2,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import FormInput from "./components/FormInput";
-import useForm from "../hooks/useForm";
+import useForm from "../../hooks/useForm";
 
 /**
  * Interface for registration form values
