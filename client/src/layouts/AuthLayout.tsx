@@ -39,6 +39,8 @@ const AuthLayout: React.FC = () => {
       <div className="relative z-10 h-full flex flex-col items-center">
         {/* Header */}
         <Navbar />
+        <div className="py-12 bg-dark-blue"></div>
+
         <Logo className="mt-8" />
         {/* Main Content */}
         <div className="flex-1 w-full flex items-center justify-center p-6">
