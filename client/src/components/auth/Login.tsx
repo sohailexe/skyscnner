@@ -1,25 +1,23 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import FormInput from "./components/FormInput";
 import useForm from "../../hooks/useForm";
+import { useAuth } from "@/context/AuthContext";
 
-/**
- * Interface for login form values
- */
 interface LoginFormValues {
   email: string;
   password: string;
 }
 
-/**
- * Login page component
- */
 const Login: React.FC = () => {
   const initialValues: LoginFormValues = {
     email: "",
     password: "",
   };
+
+  const { login, isLoading } = useAuth();
+  const navigate = useNavigate();
 
   const validate = (values: LoginFormValues): Record<string, string> => {
     const errors: Record<string, string> = {};
@@ -39,9 +37,14 @@ const Login: React.FC = () => {
     return errors;
   };
 
-  const handleSubmit = (values: LoginFormValues): void => {
-    console.log("Login values:", values);
-    alert("Login successful! (This is a demo)");
+  const handleSubmit = async (values: LoginFormValues): Promise<void> => {
+    try {
+      await login(values.email, values.password);
+      navigate("/profile");
+    } catch (error) {
+      alert("Login failed. Please check your credentials.");
+      console.log(error);
+    }
   };
 
   const {
@@ -133,7 +136,7 @@ const Login: React.FC = () => {
             whileTap={{ scale: 0.98 }}
             disabled={isSubmitting}
           >
-            {isSubmitting ? "Signing in..." : "Sign in"}
+            {isLoading ? "Signing in..." : "Sign in"}
           </motion.button>
         </form>
 

@@ -32,6 +32,13 @@ app.get<{}, MessageResponse>("/", (req, res) => {
     message: "Welcome to sky scanner backend",
   });
 });
+
+app.get("/api/health", (req, res) => {
+  res.json({
+    message: "Server is up and running",
+  });
+});
+
 app.use("/api/auth", userRouter);
 app.listen(port, () => {
   console.log(`App is listening on port ${port}`);

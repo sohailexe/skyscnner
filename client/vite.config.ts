@@ -12,9 +12,15 @@ export default defineConfig({
   },
   server: {
     port: 3000,
-    open: true,
+    host: true, // Expose to all network interfaces
     proxy: {
-      "/api": "http://localhost:5000", // Proxy API requests
+      "/api": {
+        target: "http://localhost:3001/",
+        changeOrigin: true,
+        secure: false,
+        // Rewrite path if needed
+        // rewrite: (path) => path.replace(/^\/api/, '')
+      },
     },
   },
 });

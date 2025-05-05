@@ -9,6 +9,8 @@ import FlightResult from "./pages/Flight/flight-search";
 import Login from "./components/auth/Login";
 import Register from "./components/auth/Register"; // Ensure this exists
 import AuthLayout from "./layouts/AuthLayout";
+import { ProtectedRoute } from "./components/auth/ProtectedRoute";
+import Profile from "./components/Profile";
 
 const App = () => {
   return (
@@ -18,8 +20,15 @@ const App = () => {
         <Route path="/" element={<AuthLayout />}>
           <Route path="login" element={<Login />} />
           <Route path="register" element={<Register />} />
+          <Route
+            path="profile"
+            element={
+              <ProtectedRoute>
+                <Profile />
+              </ProtectedRoute>
+            }
+          />
         </Route>
-
         {/* Main App Routes */}
         <Route path="/" element={<MainLayout />}>
           <Route index element={<HomePage />} />
@@ -29,6 +38,8 @@ const App = () => {
           <Route path="hotels/:hotelId" element={<HotelInfoPage />} />
           <Route path="cars" element={<CarsPage />} />
         </Route>
+
+        {/* Protected Routes */}
       </Routes>
     </Router>
   );
