@@ -2,7 +2,6 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import FormInput from "./components/FormInput";
-import SocialLogin from "./components/SocialLogin";
 import useForm from "../../hooks/useForm";
 
 /**
@@ -11,7 +10,6 @@ import useForm from "../../hooks/useForm";
 interface LoginFormValues {
   email: string;
   password: string;
-  rememberMe: boolean;
 }
 
 /**
@@ -21,7 +19,6 @@ const Login: React.FC = () => {
   const initialValues: LoginFormValues = {
     email: "",
     password: "",
-    rememberMe: false,
   };
 
   const validate = (values: LoginFormValues): Record<string, string> => {
@@ -44,7 +41,6 @@ const Login: React.FC = () => {
 
   const handleSubmit = (values: LoginFormValues): void => {
     console.log("Login values:", values);
-    // Here you would typically call an API to authenticate the user
     alert("Login successful! (This is a demo)");
   };
 
@@ -120,23 +116,6 @@ const Login: React.FC = () => {
           />
 
           <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center">
-              <input
-                id="rememberMe"
-                name="rememberMe"
-                type="checkbox"
-                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                checked={values.rememberMe as boolean}
-                onChange={handleChange}
-              />
-              <label
-                htmlFor="rememberMe"
-                className="ml-2 block text-sm text-gray-700"
-              >
-                Remember me
-              </label>
-            </div>
-
             <div className="text-sm">
               <Link
                 to="/forgot-password"
@@ -157,11 +136,6 @@ const Login: React.FC = () => {
             {isSubmitting ? "Signing in..." : "Sign in"}
           </motion.button>
         </form>
-
-        {/* Assuming SocialLogin component exists */}
-        <div className="mt-6">
-          <SocialLogin />
-        </div>
 
         <div className="mt-6 text-center">
           <p className="text-sm text-gray-600">
