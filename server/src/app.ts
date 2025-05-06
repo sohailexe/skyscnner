@@ -7,6 +7,7 @@ import * as middlewares from "./middlewares";
 import MessageResponse from "./interfaces/MessageResponse";
 import { connectToDb } from "./connection/dbConnection";
 import { userRouter } from "./routes/user/user.routes";
+import { cleanDatabase } from "./utils/cleandb";
 
 require("dotenv").config();
 
@@ -14,6 +15,7 @@ const app = express();
 const port = process.env.PORT || 3001;
 
 connectToDb(process.env.MONGO_URI!);
+// cleanDatabase(); //uncomment this line to clean the database then comment it again
 app.use(morgan("dev"));
 app.use(helmet());
 app.use(

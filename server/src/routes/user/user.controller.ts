@@ -26,6 +26,8 @@ const sendOtpController = asyncHandler(
         specialChars: false,
       });
 
+      console.log("otp------------------ " + otp);
+
       let createdOtp;
       try {
         createdOtp = await Otp.create({ email, otp });
