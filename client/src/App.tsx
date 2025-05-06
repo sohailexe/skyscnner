@@ -11,6 +11,8 @@ import Register from "./components/auth/Register"; // Ensure this exists
 import AuthLayout from "./layouts/AuthLayout";
 import { ProtectedRoute } from "./components/auth/ProtectedRoute";
 import Profile from "./components/Profile";
+import OtpVerification from "./components/auth/OtpVerification";
+import OTPSuccess from "./components/auth/Otp-success";
 
 const App = () => {
   return (
@@ -28,6 +30,9 @@ const App = () => {
               </ProtectedRoute>
             }
           />
+
+          <Route path="/otp-verify" element={<OtpVerification />} />
+          <Route path="/otp-success" element={<OTPSuccess />} />
         </Route>
         {/* Main App Routes */}
         <Route path="/" element={<MainLayout />}>

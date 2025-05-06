@@ -82,6 +82,8 @@ function useForm<T extends Record<string, any>>(
       e.preventDefault();
     }
 
+    console.log(values);
+
     setIsSubmitting(true);
 
     // Mark all fields as touched

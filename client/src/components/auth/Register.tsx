@@ -1,19 +1,22 @@
-import React from "react";
+import React, { use, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import FormInput from "./components/FormInput";
 import useForm from "../../hooks/useForm";
+import { useAuth } from "@/context/AuthContext";
+import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
+import InputSelect from "../Input-select";
 /**
  * Interface for registration form values
  */
 interface RegisterFormValues {
-  firstName: string;
-  lastName: string;
+  username: string;
   email: string;
   password: string;
+  gender: "male" | "female";
   confirmPassword: string;
-  agreeTerms: boolean;
 }
 
 /**
@@ -21,23 +24,20 @@ interface RegisterFormValues {
  */
 const RegisterForm: React.FC = () => {
   const initialValues: RegisterFormValues = {
-    firstName: "",
-    lastName: "",
+    username: "",
     email: "",
     password: "",
+    gender: "male",
     confirmPassword: "",
-    agreeTerms: false,
   };
+  const { sendOtp, isLoading, error, setError } = useAuth();
+  const navigate = useNavigate();
 
   const validate = (values: RegisterFormValues): Record<string, string> => {
     const errors: Record<string, string> = {};
 
-    if (!values.firstName) {
-      errors.firstName = "First name is required";
-    }
-
-    if (!values.lastName) {
-      errors.lastName = "Last name is required";
+    if (!values.username) {
+      errors.firstName = "Username is required";
     }
 
     if (!values.email) {
@@ -61,19 +61,33 @@ const RegisterForm: React.FC = () => {
       errors.confirmPassword = "Passwords do not match";
     }
 
-    if (!values.agreeTerms) {
-      errors.agreeTerms = "You must agree to the terms and conditions";
-    }
-
     return errors;
   };
 
-  const handleSubmit = (values: RegisterFormValues): void => {
-    console.log("Register values:", values);
-    // Here you would typically call an API to create the user
-    alert("Registration successful! (This is a demo)");
+  const handleSubmit = async ({
+    username,
+    email,
+    password,
+    gender,
+  }: RegisterFormValues): Promise<void> => {
+    try {
+      const success = await sendOtp({ username, email, password, gender });
+
+      if (success) {
+        navigate("/otp-verify", {
+          state: {
+            fromRegistration: true,
+            email,
+          },
+        });
+        toast.success("OTP sent to your email");
+      }
+    } catch (error) {}
   };
 
+  useEffect(() => {
+    setError(null);
+  }, []);
   const {
     values,
     errors,
@@ -95,7 +109,7 @@ const RegisterForm: React.FC = () => {
       transition={{ duration: 0.5 }}
     >
       <motion.div
-        className="p-6 bg-white rounded-lg shadow-lg"
+        className="p-6 bg-background nded-lg shadow-lg"
         whileHover={{
           boxShadow:
             "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
@@ -111,41 +125,34 @@ const RegisterForm: React.FC = () => {
           <p className="text-gray-600 mt-2">Join us to start your journey</p>
         </motion.div>
 
+        {error && (
+          <motion.p
+            className="text-red-500 text-center mb-4"
+            initial={{ opacity: 0, y: -5 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.2 }}
+          >
+            {error}
+          </motion.p>
+        )}
         <form
           onSubmit={(e) => {
             e.preventDefault();
             submitForm();
           }}
         >
-          <div className="grid grid-cols-2 gap-4">
-            <FormInput
-              id="firstName"
-              name="firstName"
-              label="First Name"
-              type="text"
-              placeholder="John"
-              value={values.firstName}
-              onChange={handleChange}
-              onBlur={handleBlur}
-              error={errors.firstName}
-              required
-              autoComplete="given-name"
-            />
-
-            <FormInput
-              id="lastName"
-              name="lastName"
-              label="Last Name"
-              type="text"
-              placeholder="Doe"
-              value={values.lastName}
-              onChange={handleChange}
-              onBlur={handleBlur}
-              error={errors.lastName}
-              required
-              autoComplete="family-name"
-            />
-          </div>
+          <FormInput
+            id="username"
+            name="username"
+            label="User Name"
+            type="text"
+            placeholder="johndoe"
+            value={values.username}
+            onChange={handleChange}
+            onBlur={handleBlur}
+            error={errors.lastName}
+            required
+          />
 
           <FormInput
             id="email"
@@ -188,43 +195,20 @@ const RegisterForm: React.FC = () => {
             required
             autoComplete="new-password"
           />
-
-          <div className="mb-6">
-            <div className="flex items-start">
-              <div className="flex items-center h-5">
-                <input
-                  id="agreeTerms"
-                  name="agreeTerms"
-                  type="checkbox"
-                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                  checked={values.agreeTerms}
-                  onChange={handleChange}
-                />
-              </div>
-              <div className="ml-3">
-                <label htmlFor="agreeTerms" className="text-sm text-gray-700">
-                  I agree to the{" "}
-                  <Link to="/terms" className="text-blue-600 hover:underline">
-                    Terms of Service
-                  </Link>{" "}
-                  and{" "}
-                  <Link to="/privacy" className="text-blue-600 hover:underline">
-                    Privacy Policy
-                  </Link>
-                </label>
-                {errors.agreeTerms && (
-                  <motion.p
-                    className="mt-1 text-sm text-red-600"
-                    initial={{ opacity: 0, y: -5 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.2 }}
-                  >
-                    {errors.agreeTerms}
-                  </motion.p>
-                )}
-              </div>
-            </div>
-          </div>
+          <InputSelect
+            label="Gender"
+            options={[
+              {
+                value: "male",
+                label: "Male",
+              },
+              {
+                value: "female",
+                label: "Female",
+              },
+            ]}
+            defaultValue="male"
+          />
 
           <motion.button
             type="submit"
@@ -233,7 +217,7 @@ const RegisterForm: React.FC = () => {
             whileTap={{ scale: 0.98 }}
             disabled={isSubmitting}
           >
-            {isSubmitting ? "Creating account..." : "Create account"}
+            {isLoading ? "Creating account..." : "Create account"}
           </motion.button>
         </form>
 

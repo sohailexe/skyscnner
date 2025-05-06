@@ -7,16 +7,23 @@ interface User {
   email: string;
   gender: string;
 }
+interface OtpProps {
+  email: string;
+  username: string;
+  password: string;
+  gender: "male" | "female";
+}
 
 interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
   error: string | null;
-  sendOtp: (email: string, username: string) => Promise<void>;
+  sendOtp: (otpProps: OtpProps) => Promise<boolean>;
   register: (email: string, otp: string) => Promise<void>;
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
+  setError: (error: string | null) => void;
 }
 
 const AuthContext = createContext<AuthContextType>({} as AuthContextType);
@@ -33,6 +40,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   const checkAuth = async () => {
+    setIsLoading(true);
+    setError(null);
     try {
       const response = await fetch("/api/auth", {
         credentials: "include",
@@ -49,13 +58,14 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
-  const sendOtp = async (email: string, username: string) => {
+  const sendOtp = async ({ email, username, password, gender }: OtpProps) => {
+    setError(null);
     setIsLoading(true);
     try {
       const response = await fetch("/api/auth/sendOtp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, username }),
+        body: JSON.stringify({ email, username, password, gender }),
         credentials: "include",
       });
 
@@ -63,6 +73,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         const errorData = await response.json();
         throw new Error(errorData.message);
       }
+      return true;
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to send OTP");
       throw err;
@@ -72,7 +83,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const register = async (email: string, otp: string) => {
+    setError(null);
     setIsLoading(true);
+    console.log("Registering with email:", email, "and OTP:", otp);
+
     try {
       const response = await fetch("/api/auth/register", {
         method: "POST",
@@ -80,6 +94,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         body: JSON.stringify({ email, otp }),
         credentials: "include",
       });
+
+      console.log(response);
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -145,6 +161,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         register,
         login,
         logout,
+        setError,
       }}
     >
       {children}
