@@ -7,8 +7,10 @@ import * as middlewares from "./middlewares";
 import MessageResponse from "./interfaces/MessageResponse";
 import { connectToDb } from "./connection/dbConnection";
 import { userRouter } from "./routes/user/user.routes";
+import { flightRouter } from "./routes/flights/flight.routes";
+import { config } from "dotenv";
 
-require("dotenv").config();
+config();
 
 const app = express();
 const port = process.env.PORT || 3001;
@@ -33,6 +35,7 @@ app.get<{}, MessageResponse>("/", (req, res) => {
   });
 });
 app.use("/api/auth", userRouter);
+app.use("/api/flight", flightRouter);
 app.listen(port, () => {
   console.log(`App is listening on port ${port}`);
 });
