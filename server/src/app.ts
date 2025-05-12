@@ -18,6 +18,7 @@ connectToDb(process.env.MONGO_URI!);
 // cleanDatabase(); //uncomment this line to clean the database then comment it again
 app.use(morgan("dev"));
 app.use(helmet());
+
 app.use(
   cors({
     origin: [process.env.FRONT_END_ORIGIN!],
