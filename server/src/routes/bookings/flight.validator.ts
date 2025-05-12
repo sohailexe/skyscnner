@@ -5,10 +5,7 @@ export const flightValidator = z.object({
   fromLocation: z.string().min(3).max(3),
   toLocation: z.string().min(3).max(3),
   departureDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
-  returnDate: z
-    .string()
-    .regex(/^\d{4}-\d{2}-\d{2}$/)
-    .optional(),
+  returnDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
   traverlerDetails: z.object({
     adults: z.number().min(1),
     children: z

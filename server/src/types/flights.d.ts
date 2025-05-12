@@ -96,3 +96,17 @@ export interface Amenity {
     name: string;
   };
 }
+
+export interface HotelCard {
+  hotelName: string;
+  cityCode: string;
+  roomCategory: string;
+  bedInfo: string;
+  description: string;
+  checkIn: string;
+  checkOut: string;
+  price: string;
+  currency: string;
+  refundable: boolean;
+  guests: number;
+}
