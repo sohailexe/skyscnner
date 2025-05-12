@@ -76,7 +76,7 @@ export function DatePicker({
   };
 
   const format = (date: Date, formatStr: string) => {
-    console.log("Formatting date:", date, "with format:", formatStr);
+    // console.log("Formatting date:", date, "with format:", formatStr);
 
     // Simple formatter for "MMM dd, yyyy" format
     const monthAbbr = months[date.getMonth()].substring(0, 3);

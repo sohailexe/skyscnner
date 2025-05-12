@@ -25,8 +25,7 @@ const sendOtpController = asyncHandler(
         upperCaseAlphabets: false,
         specialChars: false,
       });
-
-      console.log("otp------------------ " + otp);
+      console.log(otp);
 
       let createdOtp;
       try {

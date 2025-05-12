@@ -22,3 +22,18 @@ export const authChecker = (
     next({ message: "Invalid Tokens", status: 404 });
   }
 };
+export const authParser = (req: Request, res: Response, next: NextFunction) => {
+  const token = req.cookies?.accessToken;
+
+  if (!token) {
+    return next();
+  }
+
+  try {
+    const user = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET!);
+    req.body.user = user;
+  } catch (err) {
+    return next();
+  }
+  next();
+};

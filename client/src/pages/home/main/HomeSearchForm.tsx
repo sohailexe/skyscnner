@@ -9,7 +9,9 @@ import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router";
 import { DateInputField } from "@/pages/home/main/home-search/DateInputField";
 import { SearchButton } from "@/pages/home/main/home-search/Searchbtn";
-
+import { useFlightStore } from "@/store/flightStore";
+import { Popover } from "@radix-ui/react-popover";
+import { PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 export default function HomeSearchForm() {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
@@ -26,6 +28,42 @@ export default function HomeSearchForm() {
 
   const departureRef = useRef<HTMLButtonElement>(null);
   const returnRef = useRef<HTMLButtonElement>(null);
+
+  const fetchFlights = useFlightStore((state) => state.fetchFlights);
+  const [isOpen, setIsOpen] = useState({ guests: false });
+  const [adults, setAdults] = useState(1);
+  const [children, setChildren] = useState<number[]>([]);
+
+  // Helper functions
+  const increment = (value: number, setter: (v: number) => void) =>
+    setter(value + 1);
+  const decrement = (value: number, setter: (v: number) => void) =>
+    setter(value - 1);
+
+  // Children age state handlers
+  const setChildAge = (index: number, age: number) => {
+    setChildren((prev) => {
+      const updated = [...prev];
+      updated[index] = age;
+      return updated;
+    });
+  };
+
+  const addChild = () => setChildren((prev) => [...prev, 5]);
+  const removeChild = () =>
+    setChildren((prev) => (prev.length > 0 ? prev.slice(0, -1) : prev));
+
+  // Apply guest selection
+  const applyGuestSelection = () => {
+    setFormData((prev) => ({
+      ...prev,
+      traverlerDetails: {
+        adults,
+        children: children.map((age) => ({ age })),
+      },
+    }));
+    setIsOpen((prev) => ({ ...prev, guests: false }));
+  };
 
   const handleText = (field: string) => (value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -108,10 +146,19 @@ export default function HomeSearchForm() {
     setIsLoading(true);
 
     try {
-      // API call would go here
-      // For example: await searchFlights(formData);
+      const payload = {
+        fromLocation: "NYC",
+        toLocation: "LAX",
+        departureDate: "2025-06-10",
+        returnDate: "2025-06-20",
+        userTimezone: "America/New_York",
+        traverlerDetails: {
+          adults: 2,
+          children: [{ age: 5 }, { age: 10 }],
+        },
+      };
 
-      // Navigate to results page
+      fetchFlights(payload);
       navigate("/flight/search");
     } catch (error) {
       console.error("Flight search failed:", error);
@@ -212,6 +259,101 @@ export default function HomeSearchForm() {
           />
         </motion.div>
 
+        <Popover
+          open={isOpen.guests}
+          onOpenChange={(open: boolean) =>
+            setIsOpen((prev) => ({ ...prev, guests: open }))
+          }
+        >
+          <PopoverTrigger asChild>
+            <Button
+              variant="outline"
+              className="w-full justify-start bg-white text-black hover:bg-gray-100 h-12"
+            >
+              {adults} Adult{adults > 1 ? "s" : ""}, {children.length} Child
+              {children.length !== 1 ? "ren" : ""}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-72 p-4" align="start">
+            <div className="space-y-4">
+              {/* Adults */}
+              <div>
+                <h3 className="font-medium mb-2">Adults</h3>
+                <div className="flex justify-between items-center">
+                  <span>Age 12+</span>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="h-8 w-8 p-0"
+                      onClick={() => decrement(adults, setAdults)}
+                      disabled={adults <= 1}
+                    >
+                      -
+                    </Button>
+                    <span>{adults}</span>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="h-8 w-8 p-0"
+                      onClick={() => increment(adults, setAdults)}
+                    >
+                      +
+                    </Button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Children */}
+              <div>
+                <h3 className="font-medium mb-2">Children</h3>
+                <div className="space-y-2">
+                  {children.map((age, index) => (
+                    <div
+                      key={index}
+                      className="flex justify-between items-center"
+                    >
+                      <span>Child {index + 1}</span>
+                      <input
+                        type="number"
+                        value={age}
+                        min={1}
+                        max={17}
+                        onChange={(e) =>
+                          setChildAge(index, Number(e.target.value))
+                        }
+                        className="w-16 p-1 rounded border text-black"
+                      />
+                    </div>
+                  ))}
+                </div>
+                <div className="flex justify-end gap-2 mt-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-8"
+                    onClick={addChild}
+                  >
+                    + Add Child
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-8"
+                    onClick={removeChild}
+                    disabled={children.length === 0}
+                  >
+                    - Remove
+                  </Button>
+                </div>
+              </div>
+
+              <Button className="w-full mt-4" onClick={applyGuestSelection}>
+                Apply
+              </Button>
+            </div>
+          </PopoverContent>
+        </Popover>
         {/* Search Button */}
         <SearchButton isLoading={isLoading} />
       </div>

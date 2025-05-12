@@ -69,6 +69,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         credentials: "include",
       });
 
+      console.log(response);
+
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.message);
