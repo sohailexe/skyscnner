@@ -25,24 +25,4 @@ export const carBookingValidator = z.object({
     .regex(timeRegex, "Drop-off time must be in HH:mm format (24-hour)."),
 
   returnToSameLocation: z.boolean(),
-
-  driverAge: z
-    .number({
-      required_error: "Driver age is required.",
-      invalid_type_error: "Driver age must be a number.",
-    })
-    .min(18, "Driver age must be at least 18.")
-    .max(70, "Driver age must be less than or equal to 70."),
-
-  vehicleType: z
-    .enum([
-      "economy",
-      "compact",
-      "suv",
-      "luxury",
-      "van",
-      "truck",
-      "convertible",
-    ])
-    .optional(),
 });

@@ -8,8 +8,6 @@ interface CarBookingDocument extends Document {
   dropOffDate: Date;
   dropOffTime: string;
   returnToSameLocation: boolean;
-  driverAge: number;
-  vehicleType?: string;
   user?: mongoose.Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
@@ -70,25 +68,6 @@ const CarBookingSchema = new Schema<CarBookingDocument>(
       type: Boolean,
       required: true,
       default: true,
-    },
-    driverAge: {
-      type: Number,
-      required: true,
-      min: [18, "Driver age must be at least 18."],
-      max: [70, "Driver age must be reasonable."],
-    },
-    vehicleType: {
-      type: String,
-      required: false,
-      enum: [
-        "economy",
-        "compact",
-        "suv",
-        "luxury",
-        "van",
-        "truck",
-        "convertible",
-      ],
     },
   },
   {

@@ -9,6 +9,7 @@ import { hotelValidator } from "./hotels/hotel.validator";
 import { HotelCard } from "../../types/flights";
 import { HotelModel } from "./hotels/hotel.model";
 import { carBookingValidator } from "./car/car.validator";
+import { CarBookingModel } from "./car/car.model";
 
 const getFlightDetails = async (
   req: Request,
@@ -276,53 +277,102 @@ const getCarDetails = async (
       dropOffLocation,
       dropOffDate,
       dropOffTime,
-      returnToSameLocation,
-      driverAge,
-      vehicleType,
     } = parsed.data;
 
-    if (DateTime.fromISO(pickUpTime) > DateTime.fromISO(dropOffTime)) {
+    const pickupDateTime = new Date(`${pickUpDate}T${pickUpTime}:00`);
+    const dropoffDateTime = new Date(`${dropOffDate}T${dropOffTime}:00`);
+
+    if (pickupDateTime >= dropoffDateTime) {
       return res.status(400).json({
         success: false,
-        message: "Check-in date must be before check-out date.",
+        message: "Pick-up date/time must be earlier than drop-off date/time.",
       });
     }
 
     let availabilityResponse;
     try {
-      let pickupDateTime: any = `${pickUpDate}T${pickUpTime}`;
-      pickupDateTime = new Date(pickupDateTime).toISOString();
-      let dropoffDateTime: any = `${dropOffDate}T${dropOffTime}`;
-      dropoffDateTime = new Date(dropoffDateTime).toISOString();
+      const formattedPickup = pickupDateTime.toISOString().slice(0, 19);
+      const formattedDropoff = dropoffDateTime.toISOString().slice(0, 19);
 
-      availabilityResponse = await amadeus.shopping.carRentals.search.get({
-        pickupLocation: pickUpLocation,
-        dropoffLocation: dropOffLocation,
-        pickupDateTime: pickupDateTime,
-        dropoffDateTime: dropoffDateTime,
-      });
-    } catch (err) {
+      const transferSearchBody = {
+        startLocationCode: pickUpLocation,
+        endLocationCode: dropOffLocation,
+        startDateTime: formattedPickup,
+        endDateTime: formattedDropoff,
+        transferType: "PRIVATE",
+      };
+
+      availabilityResponse = await amadeus.shopping.transferOffers.post(
+        transferSearchBody
+      );
+    } catch (err: any) {
+      console.error("Error calling Amadeus API:", err?.message || err);
       return res.status(502).json({
         success: false,
-        message: "Failed to fetch hotel locations from external provider.",
+        message:
+          "Failed to fetch transfer offers from provider. Please try again later.",
+        error: err?.message || "Unknown error",
       });
     }
 
-    const availableCars = availabilityResponse.data;
+    const availableCars = availabilityResponse?.data;
 
-    if (!availableCars || availableCars.length === 0) {
+    if (!Array.isArray(availableCars) || availableCars.length === 0) {
       return res.status(404).json({
         success: false,
-        message: "No hotels found for the provided destination.",
+        message: "No available cars found for the selected route and time.",
       });
     }
 
-    return res.status(200).json(availableCars);
-  } catch (error) {
-    console.error("Unexpected error:", error);
+    const carsDetails = availableCars.map((car: any) => {
+      const vehicle = car.vehicle || {};
+      const provider = car.serviceProvider || {};
+      const quotation = car.converted || car.quotation || {};
+      const seats = vehicle.seats?.[0]?.count ?? 0;
+
+      return {
+        id: car.id,
+        providerName: provider.name || "Unknown Provider",
+        providerLogo: provider.logoUrl || "",
+        vehicleImage: vehicle.imageURL || "",
+        vehicleDescription:
+          vehicle.description || "Vehicle description not available",
+        seatCount: seats,
+        startTime: car.start?.dateTime || "",
+        startLocation: car.start?.locationCode || "Unknown",
+        endTime: car.end?.dateTime || "",
+        endLocation: car.end?.locationCode || "Unknown",
+        price: quotation.monetaryAmount || "0",
+        currency: quotation.currencyCode || "EUR",
+        distanceKm: car.distance?.value || 0,
+      };
+    });
+
+    try {
+      await CarBookingModel.insertOne({
+        user: req.body.user?.id,
+        pickUpLocation,
+        pickUpDate,
+        pickUpTime,
+        dropOffLocation,
+        dropOffDate,
+        dropOffTime,
+        returnToSameLocation: pickUpLocation === dropOffLocation,
+      });
+    } catch (err: any) {
+      console.error("Database insert error:", err?.message || err);
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: carsDetails,
+    });
+  } catch (error: any) {
+    console.error("Unexpected server error:", error?.message || error);
     return res.status(500).json({
       success: false,
-      message: "Internal server error while processing hotel details.",
+      message: "Something went wrong while processing the car booking request.",
+      error: error?.message || "Unknown internal error",
     });
   }
 };

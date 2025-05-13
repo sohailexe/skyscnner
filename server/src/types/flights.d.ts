@@ -97,6 +97,7 @@ export interface Amenity {
   };
 }
 
+// ~ hotel card type
 export interface HotelCard {
   hotelName: string;
   cityCode: string;
@@ -110,3 +111,20 @@ export interface HotelCard {
   refundable: boolean;
   guests: number;
 }
+
+// ~ car card type
+type TransferCardData = {
+  id: string;
+  providerName: string;
+  providerLogo: string;
+  vehicleImage: string;
+  vehicleDescription: string;
+  seatCount: number;
+  startTime: string;
+  startLocation: string;
+  endTime: string;
+  endLocation: string;
+  price: string;
+  currency: string;
+  distanceKm: number;
+};
