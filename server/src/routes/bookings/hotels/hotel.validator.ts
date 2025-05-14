@@ -21,10 +21,4 @@ export const hotelValidator = z.object({
       .optional(),
     rooms: z.number().min(1, "At least 1 room is required").default(1),
   }),
-  userTimezone: z
-    .string()
-    .refine((tz) => DateTime.local().setZone(tz).isValid, {
-      message:
-        'Invalid timezone. Use a valid IANA timezone like "Europe/Berlin".',
-    }),
 });

@@ -12,11 +12,18 @@ import { SearchButton } from "@/pages/home/main/home-search/Searchbtn";
 import { useFlightStore } from "@/store/flightStore";
 import { Popover } from "@radix-ui/react-popover";
 import { PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { LocationSearchInput } from "./search-input-field";
+
+export interface Location {
+  name: string;
+  code: string;
+}
+
 export default function HomeSearchForm() {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    origin: "",
-    destination: "",
+    origin: { name: "", code: "" } as Location,
+    destination: { name: "", code: "" } as Location,
     departureDate: undefined as Date | undefined,
     returnDate: undefined as Date | undefined,
     nearbyAirports: false,
@@ -65,13 +72,20 @@ export default function HomeSearchForm() {
     setIsOpen((prev) => ({ ...prev, guests: false }));
   };
 
-  const handleText = (field: string) => (value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-    // Clear error when user starts typing
-    if (errors[field]) {
-      setErrors((prev) => ({ ...prev, [field]: "" }));
-    }
-  };
+  const handleLocationChange =
+    (field: "origin" | "destination") => (value: string) => {
+      setFormData((prev) => ({
+        ...prev,
+        [field]: {
+          ...prev[field],
+          name: value,
+        },
+      }));
+
+      if (errors[field]) {
+        setErrors((prev) => ({ ...prev, [field]: "" }));
+      }
+    };
 
   const handleDate = (field: string) => (date: Date | undefined) => {
     setFormData((prev) => ({ ...prev, [field]: date }));
@@ -80,6 +94,7 @@ export default function HomeSearchForm() {
       setErrors((prev) => ({ ...prev, [field]: "" }));
     }
   };
+
   const handleCheckbox = (field: keyof typeof formData) => (checked: boolean) =>
     setFormData((prev) => ({ ...prev, [field]: checked }));
 
@@ -96,11 +111,11 @@ export default function HomeSearchForm() {
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
 
-    if (!formData.origin.trim()) {
+    if (!formData.origin.code) {
       newErrors.origin = "Origin is required";
     }
 
-    if (!formData.destination.trim()) {
+    if (!formData.destination.code) {
       newErrors.destination = "Destination is required";
     }
 
@@ -147,16 +162,21 @@ export default function HomeSearchForm() {
 
     try {
       const payload = {
-        fromLocation: "NYC",
-        toLocation: "LAX",
-        departureDate: "2025-06-10",
-        returnDate: "2025-06-20",
-        userTimezone: "America/New_York",
+        fromLocation: formData.origin.code,
+        toLocation: formData.destination.code,
+        departureDate: formData.departureDate
+          ? formData.departureDate.toISOString().split("T")[0]
+          : "2025-06-10",
+        returnDate: formData.returnDate
+          ? formData.returnDate.toISOString().split("T")[0]
+          : "2025-06-20",
+        userTimezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
         traverlerDetails: {
-          adults: 2,
-          children: [{ age: 5 }, { age: 10 }],
+          adults: adults,
+          children: children.map((age) => ({ age })),
         },
       };
+      console.log(payload);
 
       fetchFlights(payload);
       navigate("/flight/search");
@@ -171,6 +191,7 @@ export default function HomeSearchForm() {
       setIsLoading(false);
     }
   };
+
   const itemVariants = {
     hidden: { opacity: 0, y: 10 },
     visible: {
@@ -211,11 +232,21 @@ export default function HomeSearchForm() {
             },
           }}
         >
-          <TextInput
+          <LocationSearchInput
             id="origin"
             label="From"
             value={formData.origin}
-            onChange={handleText("origin")}
+            onChange={handleLocationChange("origin")}
+            onSelect={(location) => {
+              // Store the full location object with both code and name
+              setFormData((prev) => ({
+                ...prev,
+                origin: {
+                  name: location.name,
+                  code: location.code,
+                },
+              }));
+            }}
             error={errors.origin}
             className="rounded-t-2xl md:rounded-t-none md:rounded-l-2xl pr-6"
           />
@@ -223,13 +254,23 @@ export default function HomeSearchForm() {
             <SwapButton rotated={rotated} onClick={swap} />
           </div>
         </motion.div>
-        {/* Similar for destination, departure, return */}
+
         <motion.div className="md:col-span-3" variants={itemVariants}>
-          <TextInput
+          <LocationSearchInput
             id="destination"
             label="To"
             value={formData.destination}
-            onChange={handleText("destination")}
+            onChange={handleLocationChange("destination")}
+            onSelect={(location) => {
+              // Store the full location object with both code and name
+              setFormData((prev) => ({
+                ...prev,
+                destination: {
+                  name: location.name,
+                  code: location.code,
+                },
+              }));
+            }}
             className="md:pl-8"
             error={errors.destination}
           />
@@ -268,7 +309,7 @@ export default function HomeSearchForm() {
           <PopoverTrigger asChild>
             <Button
               variant="outline"
-              className="w-full justify-start bg-white text-black hover:bg-gray-100 h-12"
+              className="w-full justify-start bg-white text-black hover:bg-gray-100 h-12 md:col-span-1"
             >
               {adults} Adult{adults > 1 ? "s" : ""}, {children.length} Child
               {children.length !== 1 ? "ren" : ""}
@@ -354,9 +395,13 @@ export default function HomeSearchForm() {
             </div>
           </PopoverContent>
         </Popover>
+
         {/* Search Button */}
-        <SearchButton isLoading={isLoading} />
+        <motion.div className="md:col-span-1" variants={itemVariants}>
+          <SearchButton isLoading={isLoading} />
+        </motion.div>
       </div>
+
       <FlightOptions
         nearbyAirports={formData.nearbyAirports}
         directOnly={formData.directFlightsOnly}

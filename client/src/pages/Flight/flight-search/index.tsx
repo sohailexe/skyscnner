@@ -6,7 +6,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 const FlightCardSkeleton = () => {
   return (
-    <Card className="border border-gray-200 rounded-lg overflow-hidden mb-4">
+    <Card className="border border-gray-200 rounded-lg overflow-hidden mb-4 pt-20">
       <div className="flex justify-between items-center p-4">
         <div className="flex-1 space-y-4">
           <Skeleton className="h-4 w-32" />
