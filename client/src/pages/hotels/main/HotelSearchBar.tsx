@@ -1,14 +1,17 @@
 import { useState } from "react";
 import { Calendar, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Location } from "@/pages/home/main/HomeSearchForm";
+import { useNavigate } from "react-router";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Calendar as CalendarComponent } from "@/components/calender";
-
+import { LocationSearchInput } from "@/pages/home/main/search-input-field";
+import { useHotelStore } from "@/store/hotelStore";
+import { HotelSearchPayload } from "@/store/hotelStore";
 // Type definitions
 type RoomType = "SINGLE" | "DOUBLE" | "SUITE" | "ALL";
 
@@ -18,7 +21,7 @@ interface GuestDetails {
 }
 
 interface FormData {
-  destination: string;
+  destination: Location;
   checkIn: Date;
   checkout: Date;
   guestDetails: GuestDetails;
@@ -46,12 +49,15 @@ interface DatePickerProps {
   value: Date;
 }
 
-const ROOM_TYPES: RoomType[] = ["SINGLE", "DOUBLE", "SUITE", "ALL"];
+// const ROOM_TYPES: RoomType[] = ["SINGLE", "DOUBLE", "SUITE", "ALL"];
 
 export default function HotelSearchForm() {
   // Simplified state management
   const [formData, setFormData] = useState<FormData>({
-    destination: "",
+    destination: {
+      name: "",
+      code: "",
+    },
     checkIn: new Date(),
     checkout: new Date(new Date().setDate(new Date().getDate() + 1)),
     guestDetails: {
@@ -62,6 +68,9 @@ export default function HotelSearchForm() {
     roomType: "ALL",
     userTimezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
   });
+
+  const fetchHotels = useHotelStore((state) => state.fetchHotels);
+  const navigate = useNavigate();
 
   const [openPopover, setOpenPopover] = useState<PopoverState>({
     checkIn: false,
@@ -119,8 +128,44 @@ export default function HotelSearchForm() {
       togglePopover(field === "checkIn" ? "checkIn" : "checkOut", false);
     };
 
-  const handleSearch = (e: React.FormEvent): void => {
+  const handleLocationChange = (field: "destination") => (value: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      [field]: {
+        ...prev[field],
+        name: value,
+      },
+    }));
+  };
+
+  const handleSearch = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault();
+
+    const payload = {
+      checkIn: formData.checkIn.toISOString().split("T")[0],
+      checkout: formData.checkout.toISOString().split("T")[0],
+      destination: formData.destination.code,
+      guestDetails: {
+        adults: formData.guestDetails.adults,
+        children: Array.from({ length: formData.guestDetails.children }).map(
+          () => ({
+            age: 10,
+          })
+        ),
+
+        rooms: formData.rooms,
+      },
+
+      userTimezone: formData.userTimezone,
+    } as HotelSearchPayload;
+
+    console.log("Payload:", payload);
+    try {
+      fetchHotels(payload);
+      navigate("/hotels/search");
+    } catch (error) {
+      console.log(error);
+    }
     console.log("Search data:", formData);
   };
 
@@ -198,13 +243,41 @@ export default function HotelSearchForm() {
             <label className="text-xs text-gray-300 mb-1 block">
               Destination
             </label>
-            <Input
-              placeholder="Enter destination or hotel name"
+            {/* <LocationSearchInput
+            id="origin"
+            label="From"
+            value={formData.origin}
+            onChange={handleLocationChange("origin")}
+            onSelect={(location) => {
+              // Store the full location object with both code and name
+              setFormData((prev) => ({
+                ...prev,
+                origin: {
+                  name: location.name,
+                  code: location.code,
+                },
+              }));
+            }}
+            error={errors.origin}
+            className="rounded-t-2xl md:rounded-t-none md:rounded-l-2xl pr-6"
+          /> */}
+            <LocationSearchInput
+              id="destination"
+              label=""
+              showLabel={false}
               value={formData.destination}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                updateFormData("destination", e.target.value)
-              }
-              className="bg-white text-black h-12"
+              onChange={handleLocationChange("destination")}
+              onSelect={(location) => {
+                // Store the full location object with both code and name
+                setFormData((prev) => ({
+                  ...prev,
+                  destination: {
+                    name: location.name,
+                    code: location.code,
+                  },
+                }));
+              }}
+              className="rounded-md pr-6 py-3"
             />
           </div>
         </div>

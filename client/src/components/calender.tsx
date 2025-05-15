@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+
 import {
   ChevronLeft,
   ChevronRight,
@@ -11,7 +12,7 @@ import { motion, AnimatePresence } from "framer-motion";
 export interface CalendarProps {
   mode?: "single" | "range" | "multiple";
   selected?: Date | Date[];
-  onSelect?: (date: Date | undefined) => void;
+  onSelect?: (date: Date) => void;
   month?: Date;
   defaultMonth?: Date;
   initialFocus?: boolean;

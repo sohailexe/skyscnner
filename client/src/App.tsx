@@ -13,6 +13,8 @@ import { ProtectedRoute } from "./components/auth/ProtectedRoute";
 import Profile from "./components/Profile";
 import OtpVerification from "./components/auth/OtpVerification";
 import OTPSuccess from "./components/auth/Otp-success";
+import HotelSearchResult from "./pages/hotels/hotel-search-result";
+import CarSearchResult from "./pages/cars/car-search-result";
 
 const App = () => {
   return (
@@ -40,8 +42,10 @@ const App = () => {
           <Route path="flights" element={<FlightPage />} />
           <Route path="flight/search" element={<FlightResult />} />
           <Route path="hotels" element={<HotelPage />} />
+          <Route path="hotels/search" element={<HotelSearchResult />} />
           <Route path="hotels/:hotelId" element={<HotelInfoPage />} />
           <Route path="cars" element={<CarsPage />} />
+          <Route path="cars/search" element={<CarSearchResult />} />
         </Route>
 
         {/* Protected Routes */}

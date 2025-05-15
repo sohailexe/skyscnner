@@ -34,12 +34,13 @@ interface LocationSuggestion {
 
 export interface LocationSearchInputProps {
   id: string;
-  label: string;
+  label?: string;
   value: Location | undefined;
   onChange: (value: string) => void;
   placeholder?: string;
   className?: string;
   error?: string;
+  showLabel?: boolean;
   onSelect?: (location: LocationSuggestion) => void;
 }
 
@@ -50,6 +51,7 @@ export function LocationSearchInput({
   onChange,
   placeholder = "Country, city or airport",
   className = "",
+  showLabel = true,
   error,
   onSelect,
 }: LocationSearchInputProps) {
@@ -140,9 +142,11 @@ export function LocationSearchInput({
       className={`bg-white px-2 py-1 md:px-4 md:py-3 relative ${className}`}
       variants={itemVariants}
     >
-      <Label htmlFor={id} className="text-sm text-gray-500 block mb-1">
-        {label}
-      </Label>
+      {showLabel && (
+        <Label htmlFor={id} className="text-sm text-gray-500 block mb-1">
+          {label}
+        </Label>
+      )}
       <div className="relative">
         <Input
           id={id}
@@ -154,7 +158,7 @@ export function LocationSearchInput({
           className={`border-0 p-0 bg-white text-black font-medium focus-visible:ring-0 h-auto ${
             error ? "border-b border-red-500" : ""
           }`}
-          aria-label={`Search for ${label.toLowerCase()}`}
+          aria-label={`Search for ${label?.toLowerCase()}`}
         />
 
         {isLoading && (

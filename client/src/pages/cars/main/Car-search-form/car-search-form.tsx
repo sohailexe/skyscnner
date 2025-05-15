@@ -1,14 +1,19 @@
-import { useState } from "react";
-import { Calendar, Clock, Search } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Controller, useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Label } from "@/components/ui/label";
+import { formatDate } from "@/lib/utils";
+import LocationDropdown from "./LocationDropDown";
+import { useNavigate } from "react-router";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Calendar as CalendarComponent } from "@/components/calender";
+import { CalendarIcon, Clock } from "lucide-react";
+import { CarSearchPayload, useCarStore } from "@/store/carStore";
+import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
@@ -16,30 +21,30 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 
-interface TimeOption {
-  value: string;
-  label: string;
-}
+// Zod Schema and Types
+const FormSchema = z.object({
+  pickupLocation: z.object({
+    name: z.string().min(1, "Pickup location is required"),
+    code: z.string().min(1, "Pickup location code is required"),
+  }),
+  pickupDate: z.date(),
+  pickupTime: z.string().min(1, "Pickup time is required"),
+  dropoffLocation: z.object({
+    name: z.string().min(1, "Drop-off location is required"),
+    code: z.string().min(1, "Drop-off location code is required"),
+  }),
+  dropoffDate: z.date(),
+  dropoffTime: z.string().min(1, "Drop-off time is required"),
+  returnToSameLocation: z.boolean(),
+});
 
-interface FormData {
-  pickupLocation: string;
-  dropoffLocation: string;
-  pickupDate: Date;
-  dropoffDate: Date;
-  pickupTime: string;
-  dropoffTime: string;
-  sameDropoff: boolean;
-}
+type FormData = z.infer<typeof FormSchema>;
 
-interface IsOpenState {
-  pickupDate: boolean;
-  dropoffDate: boolean;
-}
-
-// Generate time options in 30-minute increments
-const generateTimeOptions = (): TimeOption[] => {
-  const options: TimeOption[] = [];
+// Time Options Generator
+const generateTimeOptions = () => {
+  const options: { value: string; label: string }[] = [];
   for (let hour = 0; hour < 24; hour++) {
     for (let minute of [0, 30]) {
       const hourFormatted = hour.toString().padStart(2, "0");
@@ -54,263 +59,271 @@ const generateTimeOptions = (): TimeOption[] => {
   return options;
 };
 
-const timeOptions: TimeOption[] = generateTimeOptions();
+const timeOptions = generateTimeOptions();
 
 export default function CarSearchForm() {
-  const [formData, setFormData] = useState<FormData>({
-    pickupLocation: "",
-    dropoffLocation: "",
-    pickupDate: new Date(),
-    dropoffDate: new Date(new Date().setDate(new Date().getDate() + 1)),
-    pickupTime: "10:00",
-    dropoffTime: "10:00",
-    sameDropoff: true,
+  const {
+    control,
+    handleSubmit,
+    watch,
+    formState: { errors },
+  } = useForm<FormData>({
+    defaultValues: {
+      pickupLocation: { name: "", code: "" },
+      pickupDate: new Date(),
+      pickupTime: "12:00",
+      dropoffLocation: { name: "", code: "" },
+      dropoffDate: new Date(new Date().setDate(new Date().getDate() + 1)),
+      dropoffTime: "12:00",
+      returnToSameLocation: false,
+    },
+    resolver: zodResolver(FormSchema),
   });
 
-  const [isOpen, setIsOpen] = useState<IsOpenState>({
-    pickupDate: false,
-    dropoffDate: false,
-  });
+  const navigate = useNavigate();
+  const returnToSameLocation = watch("returnToSameLocation");
+  const { fetchCars } = useCarStore();
+  const onSubmit = (data: FormData) => {
+    console.log("Form submitted:", data);
+    const payload = {
+      pickUpLocation: data.pickupLocation.code,
+      pickUpDate: data.pickupDate.toISOString().split("T")[0],
+      pickUpTime: data.pickupTime,
+      dropOffLocation: returnToSameLocation
+        ? data.pickupLocation.code
+        : data.dropoffLocation.code,
+      dropOffDate: data.dropoffDate.toISOString().split("T")[0],
+      dropOffTime: data.dropoffTime,
+      returnToSameLocation: data.returnToSameLocation,
+    } as CarSearchPayload;
 
-  // Handle form field changes
-  const handleTextChange =
-    (field: keyof Pick<FormData, "pickupLocation" | "dropoffLocation">) =>
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      setFormData((prev) => ({ ...prev, [field]: e.target.value }));
-
-      // If same location is checked, update dropoff location too
-      if (field === "pickupLocation" && formData.sameDropoff) {
-        setFormData((prev) => ({ ...prev, dropoffLocation: e.target.value }));
-      }
-    };
-
-  const handleDateChange =
-    (field: keyof Pick<FormData, "pickupDate" | "dropoffDate">) =>
-    (date: Date | undefined) => {
-      if (!date) return;
-      setFormData((prev) => ({ ...prev, [field]: date }));
-
-      // Auto-close the popover
-      if (field === "pickupDate") {
-        setIsOpen((prev) => ({ ...prev, pickupDate: false }));
-
-        // Ensure dropoff date is not before pickup date
-        if (formData.dropoffDate < date) {
-          setFormData((prev) => ({
-            ...prev,
-            dropoffDate: new Date(date.getTime() + 24 * 60 * 60 * 1000),
-          }));
-        }
-      }
-      if (field === "dropoffDate")
-        setIsOpen((prev) => ({ ...prev, dropoffDate: false }));
-    };
-
-  const handleSelectChange =
-    (field: keyof Pick<FormData, "pickupTime" | "dropoffTime">) =>
-    (value: string) => {
-      setFormData((prev) => ({ ...prev, [field]: value }));
-    };
-
-  const handleSameLocationChange = (checked: boolean) => {
-    setFormData((prev) => ({
-      ...prev,
-      sameDropoff: checked,
-      // If checking the box, copy pickup location to dropoff
-      dropoffLocation: checked ? prev.pickupLocation : prev.dropoffLocation,
-    }));
-  };
-
-  // Format date for display
-  const formatDate = (date: Date): string => {
-    return date.toLocaleDateString("en-US", {
-      day: "numeric",
-      month: "short",
-      year: "numeric",
-    });
-  };
-
-  // Format time for display
-  const formatTime = (time: string): string => {
-    const option = timeOptions.find((opt) => opt.value === time);
-    return option ? option.label : time;
-  };
-
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log("Search data:", formData);
-    // Implement search logic here
+    console.log("Payload:", payload);
+    try {
+      fetchCars(payload);
+      navigate("/cars/search");
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   return (
-    <div className="bg-dark-blue p-6 md:p-8 rounded-3xl text-white max-w-6xl mx-auto shadow-lg">
-      <div className="w-full grid grid-cols-3 gap-2.5 items-end">
-        {/* Pickup Location input */}
-        <div className="">
-          <div className="relative">
-            <label className="text-xs text-gray-300 mb-1 block">
-              Pick-up location
-            </label>
-            <Input
-              placeholder="City, airport, or address"
-              value={formData.pickupLocation}
-              onChange={handleTextChange("pickupLocation")}
-              className="bg-white text-black h-12"
-            />
-          </div>
+    <form
+      onSubmit={handleSubmit(onSubmit)}
+      className="bg-dark-blue p-6 md:p-8 rounded-3xl text-white max-w-6xl mx-auto shadow-lg"
+    >
+      <div className="w-full grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-2.5 items-end">
+        {/* Pickup Location */}
+        <div>
+          <Label className="text-xs text-gray-300 mb-1 block">
+            Pick-up location
+          </Label>
+          <Controller
+            name="pickupLocation"
+            control={control}
+            render={({ field }) => (
+              <LocationDropdown
+                value={field.value}
+                onChange={(value) => field.onChange(value)}
+              />
+            )}
+          />
+          {errors.pickupLocation?.name && (
+            <p className="text-red-400 text-xs mt-1">
+              {errors.pickupLocation.name.message}
+            </p>
+          )}
         </div>
 
-        {/* Pickup Date selector */}
-        <div className="">
-          <label className="text-xs text-gray-300 mb-1 block">
+        {/* Pickup Date */}
+        <div>
+          <Label className="text-xs text-gray-300 mb-1 block">
             Pick-up date
-          </label>
-          <Popover
-            open={isOpen.pickupDate}
-            onOpenChange={(open: boolean) =>
-              setIsOpen((prev) => ({ ...prev, pickupDate: open }))
-            }
-          >
-            <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                className="w-full justify-start bg-white text-black hover:bg-gray-100 h-12"
-              >
-                <Calendar className=" h-4 w-4" />
-                {formatDate(formData.pickupDate)}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
-              <CalendarComponent
-                mode="single"
-                selected={formData.pickupDate}
-                onSelect={handleDateChange("pickupDate")}
-                initialFocus
+          </Label>
+          <Controller
+            name="pickupDate"
+            control={control}
+            render={({ field }) => (
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className="w-full bg-white text-black h-12 justify-start font-normal"
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {formatDate(field.value)}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <CalendarComponent
+                    mode="single"
+                    selected={field.value}
+                    onSelect={field.onChange}
+                    // disabled={(date) =>
+                    //   date < new Date(new Date().setHours(0, 0, 0, 0))
+                    // }
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+            )}
+          />
+          {errors.pickupDate && (
+            <p className="text-red-400 text-xs mt-1">
+              {errors.pickupDate.message}
+            </p>
+          )}
+        </div>
+
+        {/* Pickup Time */}
+        <div>
+          <Label className="text-xs text-gray-300 mb-1 block">Time</Label>
+          <Controller
+            name="pickupTime"
+            control={control}
+            render={({ field }) => (
+              <Select onValueChange={field.onChange} value={field.value}>
+                <SelectTrigger className="bg-white text-black h-12 py w-full">
+                  <div className="flex items-center">
+                    <Clock className="mr-2 h-4 w-4" />
+                    <SelectValue />
+                  </div>
+                </SelectTrigger>
+                <SelectContent>
+                  {timeOptions.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+          />
+          {errors.pickupTime && (
+            <p className="text-red-400 text-xs mt-1">
+              {errors.pickupTime.message}
+            </p>
+          )}
+        </div>
+
+        {/* Dropoff Location */}
+        <div>
+          <Label className="text-xs text-gray-300 mb-1 block">
+            Drop-off location
+          </Label>
+          <Controller
+            name="dropoffLocation"
+            control={control}
+            render={({ field }) => (
+              <LocationDropdown
+                value={field.value}
+                onChange={field.onChange}
+                disabled={returnToSameLocation}
               />
-            </PopoverContent>
-          </Popover>
+            )}
+          />
+          {errors.dropoffLocation?.name && (
+            <p className="text-red-400 text-xs mt-1">
+              {errors.dropoffLocation.name.message}
+            </p>
+          )}
         </div>
 
-        {/* Pickup Time selector */}
-        <div className="">
-          <label className="text-xs text-gray-300 mb-1 block l">Time</label>
-          <Select
-            value={formData.pickupTime}
-            onValueChange={handleSelectChange("pickupTime")}
-          >
-            <SelectTrigger className="bg-white text-black h-12 w-full">
-              <SelectValue>
-                <div className="flex items-center">
-                  <Clock className="mr-2  w-full" />
-                  {formatTime(formData.pickupTime)}
-                </div>
-              </SelectValue>
-            </SelectTrigger>
-            <SelectContent>
-              {timeOptions.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
-                  {option.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        {/* Dropoff Location input */}
-        <div className="">
-          <div className="relative">
-            <label className="text-xs text-gray-300 mb-1 block">
-              Drop-off location
-            </label>
-            <Input
-              placeholder="City, airport, or address"
-              value={formData.dropoffLocation}
-              onChange={handleTextChange("dropoffLocation")}
-              className="bg-white text-black h-12"
-              disabled={formData.sameDropoff}
-            />
-          </div>
-        </div>
-
-        {/* Dropoff Date selector */}
-        <div className="">
-          <label className="text-xs text-gray-300 mb-1 block">
+        {/* Dropoff Date */}
+        <div>
+          <Label className="text-xs text-gray-300 mb-1 block">
             Drop-off date
-          </label>
-          <Popover
-            open={isOpen.dropoffDate}
-            onOpenChange={(open: boolean) =>
-              setIsOpen((prev) => ({ ...prev, dropoffDate: open }))
-            }
-          >
-            <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                className="w-full justify-start bg-white text-black hover:bg-gray-100 h-12"
-              >
-                <Calendar className=" h-4 w-4" />
-                {formatDate(formData.dropoffDate)}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
-              <CalendarComponent
-                mode="single"
-                selected={formData.dropoffDate}
-                onSelect={handleDateChange("dropoffDate")}
-                initialFocus
+          </Label>
+          <Controller
+            name="dropoffDate"
+            control={control}
+            render={({ field }) => (
+              <Popover>
+                <PopoverTrigger asChild className="py-0">
+                  <Button
+                    variant="outline"
+                    className="w-full bg-white text-black py-0 justify-start font-normal"
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {formatDate(field.value)}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <CalendarComponent
+                    mode="single"
+                    selected={field.value}
+                    onSelect={field.onChange}
+                    // disabled={(date) => date < watch("pickupDate")}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+            )}
+          />
+          {errors.dropoffDate && (
+            <p className="text-red-400 text-xs mt-1">
+              {errors.dropoffDate.message}
+            </p>
+          )}
+        </div>
+
+        {/* Dropoff Time */}
+        <div>
+          <Label className="text-xs text-gray-300 mb-1 block">Time</Label>
+          <Controller
+            name="dropoffTime"
+            control={control}
+            render={({ field }) => (
+              <Select onValueChange={field.onChange} value={field.value}>
+                <SelectTrigger className="bg-white text-black h-12 w-full">
+                  <div className="flex items-center">
+                    <Clock className="mr-2 h-4 w-4" />
+                    <SelectValue />
+                  </div>
+                </SelectTrigger>
+                <SelectContent>
+                  {timeOptions.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+          />
+          {errors.dropoffTime && (
+            <p className="text-red-400 text-xs mt-1">
+              {errors.dropoffTime.message}
+            </p>
+          )}
+        </div>
+
+        {/* Return to Same Location */}
+        <div className="flex items-center gap-2 mt-4 col-span-full">
+          <Controller
+            name="returnToSameLocation"
+            control={control}
+            render={({ field }) => (
+              <Checkbox
+                checked={field.value}
+                onCheckedChange={field.onChange}
               />
-            </PopoverContent>
-          </Popover>
+            )}
+          />
+          <Label className="text-sm cursor-pointer">
+            Return to same location
+          </Label>
         </div>
 
-        {/* Dropoff Time selector */}
-        <div className="">
-          <label className="text-xs text-gray-300 mb-1 block">Time</label>
-          <Select
-            value={formData.dropoffTime}
-            onValueChange={handleSelectChange("dropoffTime")}
-          >
-            <SelectTrigger className="bg-white text-black h-12 w-full">
-              <SelectValue>
-                <div className="flex items-center">
-                  <Clock className="mr-2 h-4 w-4" />
-                  {formatTime(formData.dropoffTime)}
-                </div>
-              </SelectValue>
-            </SelectTrigger>
-            <SelectContent>
-              {timeOptions.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
-                  {option.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        {/* Search Button */}
-        <div className="mt-4 md:mt-0 col-span-3">
+        {/* Submit Button */}
+        <div className="mt-4 col-span-full">
           <Button
-            onClick={handleSearch}
-            className="bg-blue-600 hover:bg-blue-700 text-white w-full h-12"
+            type="submit"
+            className="w-full h-12 bg-blue-600 hover:bg-blue-700"
           >
-            <Search className="mr-2 h-4 w-4" />
             Search Cars
           </Button>
         </div>
       </div>
-
-      {/* Same location checkbox */}
-      <div className="flex items-center gap-2 mt-4">
-        <Checkbox
-          id="same-location"
-          checked={formData.sameDropoff}
-          onCheckedChange={handleSameLocationChange}
-        />
-        <label htmlFor="same-location" className="text-sm">
-          Return car to same location
-        </label>
-      </div>
-    </div>
+    </form>
   );
 }
