@@ -9,7 +9,7 @@ export default function MainLayout() {
   return (
     <div className="mx-auto  ">
       <Navbar />
-      <main className="flex-grow">{<Outlet />}</main>
+      <main className="flex-grow ">{<Outlet />}</main>
       <FaqSection />
       <Planner />
       <Footer />

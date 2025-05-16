@@ -101,7 +101,7 @@ const HotelSearchResult = () => {
   });
 
   return (
-    <div className="bg-gray-50 min-h-screen pb-12 mt-30">
+    <div className="bg-gray-50 min-h-screen pb-12 ">
       {/* Header with search summary */}
       <div className="bg-blue-600 text-white py-4">
         <div className="container mx-auto px-4">
@@ -354,7 +354,7 @@ const HotelSearchResult = () => {
 // Loading skeleton component
 const LoadingSkeleton = () => {
   return (
-    <div className="bg-gray-50 min-h-screen pb-12 mt-30">
+    <div className="bg-gray-50 min-h-screen pb-12 ">
       <div className="bg-blue-600 text-white py-4">
         <div className="container mx-auto px-4">
           <Skeleton className="h-8 w-64 bg-blue-500 mb-2" />

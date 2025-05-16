@@ -22,7 +22,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion"; // Added framer-motion
 
 // Zod Schema and Types (No changes)
@@ -132,6 +132,15 @@ export default function CarSearchForm() {
 
   const returnToSameLocation = watch("returnToSameLocation");
   const pickupLocation = watch("pickupLocation");
+  const pickUpDate = watch("pickupDate");
+
+  useEffect(() => {
+    setValue(
+      "dropoffDate",
+      new Date(pickUpDate.setDate(pickUpDate.getDate() + 1)),
+      { shouldValidate: true }
+    );
+  }, [pickUpDate]);
 
   useEffect(() => {
     if (returnToSameLocation && pickupLocation.name) {
@@ -168,7 +177,7 @@ export default function CarSearchForm() {
       onSubmit={handleSubmit(onSubmit)}
       className="bg-dark-blue p-6 md:p-8 rounded-3xl text-white max-w-6xl mx-auto shadow-lg"
     >
-      <div className="w-full grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-2.5 items-start">
+      <div className="w-full grid grid-cols-2  md:grid-cols-3 gap-4 md:gap-2.5 items-start">
         {" "}
         {/* Changed items-end to items-start for better alignment with error messages */}
         {/* Pickup Location */}
@@ -411,7 +420,7 @@ export default function CarSearchForm() {
         {/* Return to Same Location */}
         <motion.div
           variants={formItemVariants}
-          className="flex items-center gap-2 mt-4 col-span-full" // Added vertical margin for better spacing
+          className="flex items-center gap-2 md:mt-4 col-span-full" // Added vertical margin for better spacing
         >
           <Controller
             name="returnToSameLocation"
@@ -439,7 +448,7 @@ export default function CarSearchForm() {
         {/* Submit Button */}
         <motion.div
           variants={formItemVariants}
-          className="mt-6 col-span-full" // Added a bit more top margin
+          className="md:mt-6 col-span-full" // Added a bit more top margin
         >
           <motion.div
             whileHover={{ scale: 1.02, y: -2 }}
