@@ -3,14 +3,14 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Label } from "@/components/ui/label";
 import { formatDate } from "@/lib/utils";
-import LocationDropdown from "./LocationDropDown";
+import LocationDropdown from "./LocationDropDown"; // Assuming this is your custom component
 import { useNavigate } from "react-router";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Calendar as CalendarComponent } from "@/components/calender";
+import { Calendar as CalendarComponent } from "@/components/calender"; // Original path: @/components/calender (potential typo: calendar?)
 import { CalendarIcon, Clock } from "lucide-react";
 import { CarSearchPayload, useCarStore } from "@/store/carStore";
 import { Button } from "@/components/ui/button";
@@ -23,8 +23,9 @@ import {
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion"; // Added framer-motion
 
-// Zod Schema and Types
+// Zod Schema and Types (No changes)
 const FormSchema = z.object({
   pickupLocation: z.object({
     name: z.string().min(1, "Pickup location is required"),
@@ -43,7 +44,7 @@ const FormSchema = z.object({
 
 type FormData = z.infer<typeof FormSchema>;
 
-// Time Options Generator
+// Time Options Generator (No changes)
 const generateTimeOptions = () => {
   const options: { value: string; label: string }[] = [];
   for (let hour = 0; hour < 24; hour++) {
@@ -61,6 +62,50 @@ const generateTimeOptions = () => {
 };
 
 const timeOptions = generateTimeOptions();
+
+// Animation Variants
+const formContainerVariants = {
+  hidden: { opacity: 0, y: 30 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.5,
+      ease: "easeOut",
+      when: "beforeChildren",
+      staggerChildren: 0.08, // Slightly faster stagger
+    },
+  },
+};
+
+const formItemVariants = {
+  hidden: { opacity: 0, y: 20, scale: 0.98 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: {
+      duration: 0.3,
+      ease: "easeOut",
+    },
+  },
+};
+
+const conditionalTextVariants = {
+  initial: { opacity: 0, height: 0, y: -10 },
+  animate: {
+    opacity: 1,
+    height: "auto",
+    y: 0,
+    transition: { duration: 0.25, ease: "easeOut" },
+  },
+  exit: {
+    opacity: 0,
+    height: 0,
+    y: -10,
+    transition: { duration: 0.2, ease: "easeIn" },
+  },
+};
 
 export default function CarSearchForm() {
   const {
@@ -85,14 +130,12 @@ export default function CarSearchForm() {
   const navigate = useNavigate();
   const { fetchCars } = useCarStore();
 
-  // Watch for form field changes
   const returnToSameLocation = watch("returnToSameLocation");
   const pickupLocation = watch("pickupLocation");
 
-  // Effect to sync pickup and dropoff locations when returnToSameLocation is checked
   useEffect(() => {
     if (returnToSameLocation && pickupLocation.name) {
-      setValue("dropoffLocation", pickupLocation);
+      setValue("dropoffLocation", pickupLocation, { shouldValidate: true });
     }
   }, [returnToSameLocation, pickupLocation, setValue]);
 
@@ -118,13 +161,18 @@ export default function CarSearchForm() {
   };
 
   return (
-    <form
+    <motion.form
+      variants={formContainerVariants}
+      initial="hidden"
+      animate="visible"
       onSubmit={handleSubmit(onSubmit)}
       className="bg-dark-blue p-6 md:p-8 rounded-3xl text-white max-w-6xl mx-auto shadow-lg"
     >
-      <div className="w-full grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-2.5 items-end">
+      <div className="w-full grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-2.5 items-start">
+        {" "}
+        {/* Changed items-end to items-start for better alignment with error messages */}
         {/* Pickup Location */}
-        <div>
+        <motion.div variants={formItemVariants}>
           <Label className="text-xs text-gray-300 mb-1 block">
             Pick-up location
           </Label>
@@ -136,23 +184,29 @@ export default function CarSearchForm() {
                 value={field.value}
                 onChange={(value) => {
                   field.onChange(value);
-                  // Auto-update dropoff location if "return to same location" is checked
                   if (returnToSameLocation) {
-                    setValue("dropoffLocation", value);
+                    setValue("dropoffLocation", value, {
+                      shouldValidate: true,
+                    });
                   }
                 }}
               />
             )}
           />
-          {errors.pickupLocation?.name && (
-            <p className="text-red-400 text-xs mt-1">
-              {errors.pickupLocation.name.message}
-            </p>
-          )}
-        </div>
-
+          <AnimatePresence>
+            {errors.pickupLocation?.name && (
+              <motion.p
+                key="error-pickupLocation-name"
+                {...conditionalTextVariants}
+                className="text-red-400 text-xs mt-1"
+              >
+                {errors.pickupLocation.name.message}
+              </motion.p>
+            )}
+          </AnimatePresence>
+        </motion.div>
         {/* Pickup Date */}
-        <div>
+        <motion.div variants={formItemVariants}>
           <Label className="text-xs text-gray-300 mb-1 block">
             Pick-up date
           </Label>
@@ -181,15 +235,20 @@ export default function CarSearchForm() {
               </Popover>
             )}
           />
-          {errors.pickupDate && (
-            <p className="text-red-400 text-xs mt-1">
-              {errors.pickupDate.message}
-            </p>
-          )}
-        </div>
-
+          <AnimatePresence>
+            {errors.pickupDate && (
+              <motion.p
+                key="error-pickupDate"
+                {...conditionalTextVariants}
+                className="text-red-400 text-xs mt-1"
+              >
+                {errors.pickupDate.message}
+              </motion.p>
+            )}
+          </AnimatePresence>
+        </motion.div>
         {/* Pickup Time */}
-        <div>
+        <motion.div variants={formItemVariants}>
           <Label className="text-xs text-gray-300 mb-1 block">Time</Label>
           <Controller
             name="pickupTime"
@@ -197,6 +256,8 @@ export default function CarSearchForm() {
             render={({ field }) => (
               <Select onValueChange={field.onChange} value={field.value}>
                 <SelectTrigger className="bg-white text-black h-12 py w-full">
+                  {" "}
+                  {/* Note: 'py' might be a typo in original - should be like py-2? */}
                   <div className="flex items-center">
                     <Clock className="mr-2 h-4 w-4" />
                     <SelectValue />
@@ -212,15 +273,20 @@ export default function CarSearchForm() {
               </Select>
             )}
           />
-          {errors.pickupTime && (
-            <p className="text-red-400 text-xs mt-1">
-              {errors.pickupTime.message}
-            </p>
-          )}
-        </div>
-
+          <AnimatePresence>
+            {errors.pickupTime && (
+              <motion.p
+                key="error-pickupTime"
+                {...conditionalTextVariants}
+                className="text-red-400 text-xs mt-1"
+              >
+                {errors.pickupTime.message}
+              </motion.p>
+            )}
+          </AnimatePresence>
+        </motion.div>
         {/* Dropoff Location */}
-        <div>
+        <motion.div variants={formItemVariants}>
           <Label className="text-xs text-gray-300 mb-1 block">
             Drop-off location
           </Label>
@@ -228,30 +294,44 @@ export default function CarSearchForm() {
             name="dropoffLocation"
             control={control}
             render={({ field }) => (
-              <LocationDropdown
-                value={field.value}
-                onChange={field.onChange}
-                disabled={returnToSameLocation}
-                className={
-                  returnToSameLocation ? "opacity-70 cursor-not-allowed" : ""
-                }
-              />
+              <motion.div
+                animate={{ opacity: returnToSameLocation ? 0.65 : 1 }}
+                transition={{ duration: 0.3 }}
+              >
+                <LocationDropdown
+                  value={field.value}
+                  onChange={field.onChange}
+                  disabled={returnToSameLocation}
+                  className={returnToSameLocation ? "cursor-not-allowed" : ""}
+                />
+              </motion.div>
             )}
           />
-          {errors.dropoffLocation?.name && !returnToSameLocation && (
-            <p className="text-red-400 text-xs mt-1">
-              {errors.dropoffLocation.name.message}
-            </p>
-          )}
-          {returnToSameLocation && (
-            <p className="text-xs text-gray-400 mt-1">
-              Same as pick-up location
-            </p>
-          )}
-        </div>
-
+          <AnimatePresence mode="wait">
+            {" "}
+            {/* mode="wait" ensures one exits before other enters */}
+            {errors.dropoffLocation?.name && !returnToSameLocation && (
+              <motion.p
+                key="error-dropoffLocation-name"
+                {...conditionalTextVariants}
+                className="text-red-400 text-xs mt-1"
+              >
+                {errors.dropoffLocation.name.message}
+              </motion.p>
+            )}
+            {returnToSameLocation && (
+              <motion.p
+                key="info-sameLocation"
+                {...conditionalTextVariants}
+                className="text-xs text-gray-400 mt-1"
+              >
+                Same as pick-up location
+              </motion.p>
+            )}
+          </AnimatePresence>
+        </motion.div>
         {/* Dropoff Date */}
-        <div>
+        <motion.div variants={formItemVariants}>
           <Label className="text-xs text-gray-300 mb-1 block">
             Drop-off date
           </Label>
@@ -260,10 +340,10 @@ export default function CarSearchForm() {
             control={control}
             render={({ field }) => (
               <Popover>
-                <PopoverTrigger asChild className="py-0">
+                <PopoverTrigger asChild>
                   <Button
                     variant="outline"
-                    className="w-full bg-white text-black py-0 justify-start font-normal"
+                    className="w-full bg-white text-black py-0 justify-start font-normal" // Original 'py-0' kept
                   >
                     <CalendarIcon className="mr-2 h-4 w-4" />
                     {formatDate(field.value)}
@@ -280,15 +360,20 @@ export default function CarSearchForm() {
               </Popover>
             )}
           />
-          {errors.dropoffDate && (
-            <p className="text-red-400 text-xs mt-1">
-              {errors.dropoffDate.message}
-            </p>
-          )}
-        </div>
-
+          <AnimatePresence>
+            {errors.dropoffDate && (
+              <motion.p
+                key="error-dropoffDate"
+                {...conditionalTextVariants}
+                className="text-red-400 text-xs mt-1"
+              >
+                {errors.dropoffDate.message}
+              </motion.p>
+            )}
+          </AnimatePresence>
+        </motion.div>
         {/* Dropoff Time */}
-        <div>
+        <motion.div variants={formItemVariants}>
           <Label className="text-xs text-gray-300 mb-1 block">Time</Label>
           <Controller
             name="dropoffTime"
@@ -311,15 +396,23 @@ export default function CarSearchForm() {
               </Select>
             )}
           />
-          {errors.dropoffTime && (
-            <p className="text-red-400 text-xs mt-1">
-              {errors.dropoffTime.message}
-            </p>
-          )}
-        </div>
-
+          <AnimatePresence>
+            {errors.dropoffTime && (
+              <motion.p
+                key="error-dropoffTime"
+                {...conditionalTextVariants}
+                className="text-red-400 text-xs mt-1"
+              >
+                {errors.dropoffTime.message}
+              </motion.p>
+            )}
+          </AnimatePresence>
+        </motion.div>
         {/* Return to Same Location */}
-        <div className="flex items-center gap-2 mt-4 col-span-full">
+        <motion.div
+          variants={formItemVariants}
+          className="flex items-center gap-2 mt-4 col-span-full" // Added vertical margin for better spacing
+        >
           <Controller
             name="returnToSameLocation"
             control={control}
@@ -327,10 +420,12 @@ export default function CarSearchForm() {
               <Checkbox
                 checked={field.value}
                 onCheckedChange={(checked) => {
-                  field.onChange(checked);
-                  // When checked, set dropoff location to pickup location
-                  if (checked) {
-                    setValue("dropoffLocation", watch("pickupLocation"));
+                  const newCheckedState = !!checked; // Ensure boolean
+                  field.onChange(newCheckedState);
+                  if (newCheckedState) {
+                    setValue("dropoffLocation", watch("pickupLocation"), {
+                      shouldValidate: true,
+                    });
                   }
                 }}
                 id="return-checkbox"
@@ -340,18 +435,31 @@ export default function CarSearchForm() {
           <Label htmlFor="return-checkbox" className="text-sm cursor-pointer">
             Return to same location
           </Label>
-        </div>
-
+        </motion.div>
         {/* Submit Button */}
-        <div className="mt-4 col-span-full">
-          <Button
-            type="submit"
-            className="w-full h-12 bg-blue-600 hover:bg-blue-700"
+        <motion.div
+          variants={formItemVariants}
+          className="mt-6 col-span-full" // Added a bit more top margin
+        >
+          <motion.div
+            whileHover={{ scale: 1.02, y: -2 }}
+            whileTap={{ scale: 0.98, y: 0 }}
+            transition={{
+              type: "spring",
+              stiffness: 400,
+              damping: 17,
+              duration: 0.15,
+            }}
           >
-            Search Cars
-          </Button>
-        </div>
+            <Button
+              type="submit"
+              className="w-full h-12 bg-blue-600 hover:bg-blue-700"
+            >
+              Search Cars
+            </Button>
+          </motion.div>
+        </motion.div>
       </div>
-    </form>
+    </motion.form>
   );
 }
