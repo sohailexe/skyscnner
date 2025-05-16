@@ -22,6 +22,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
+import { useEffect } from "react";
 
 // Zod Schema and Types
 const FormSchema = z.object({
@@ -46,7 +47,7 @@ type FormData = z.infer<typeof FormSchema>;
 const generateTimeOptions = () => {
   const options: { value: string; label: string }[] = [];
   for (let hour = 0; hour < 24; hour++) {
-    for (let minute of [0, 30]) {
+    for (const minute of [0, 30]) {
       const hourFormatted = hour.toString().padStart(2, "0");
       const minuteFormatted = minute.toString().padStart(2, "0");
       const time = `${hourFormatted}:${minuteFormatted}`;
@@ -67,6 +68,7 @@ export default function CarSearchForm() {
     handleSubmit,
     watch,
     formState: { errors },
+    setValue,
   } = useForm<FormData>({
     defaultValues: {
       pickupLocation: { name: "", code: "" },
@@ -81,17 +83,26 @@ export default function CarSearchForm() {
   });
 
   const navigate = useNavigate();
-  const returnToSameLocation = watch("returnToSameLocation");
   const { fetchCars } = useCarStore();
+
+  // Watch for form field changes
+  const returnToSameLocation = watch("returnToSameLocation");
+  const pickupLocation = watch("pickupLocation");
+
+  // Effect to sync pickup and dropoff locations when returnToSameLocation is checked
+  useEffect(() => {
+    if (returnToSameLocation && pickupLocation.name) {
+      setValue("dropoffLocation", pickupLocation);
+    }
+  }, [returnToSameLocation, pickupLocation, setValue]);
+
   const onSubmit = (data: FormData) => {
     console.log("Form submitted:", data);
     const payload = {
       pickUpLocation: data.pickupLocation.code,
       pickUpDate: data.pickupDate.toISOString().split("T")[0],
       pickUpTime: data.pickupTime,
-      dropOffLocation: returnToSameLocation
-        ? data.pickupLocation.code
-        : data.dropoffLocation.code,
+      dropOffLocation: data.dropoffLocation.code,
       dropOffDate: data.dropoffDate.toISOString().split("T")[0],
       dropOffTime: data.dropoffTime,
       returnToSameLocation: data.returnToSameLocation,
@@ -123,7 +134,13 @@ export default function CarSearchForm() {
             render={({ field }) => (
               <LocationDropdown
                 value={field.value}
-                onChange={(value) => field.onChange(value)}
+                onChange={(value) => {
+                  field.onChange(value);
+                  // Auto-update dropoff location if "return to same location" is checked
+                  if (returnToSameLocation) {
+                    setValue("dropoffLocation", value);
+                  }
+                }}
               />
             )}
           />
@@ -147,7 +164,7 @@ export default function CarSearchForm() {
                 <PopoverTrigger asChild>
                   <Button
                     variant="outline"
-                    className="w-full bg-white text-black h-12 justify-start font-normal"
+                    className="w-full bg-white text-black justify-start font-normal"
                   >
                     <CalendarIcon className="mr-2 h-4 w-4" />
                     {formatDate(field.value)}
@@ -158,9 +175,6 @@ export default function CarSearchForm() {
                     mode="single"
                     selected={field.value}
                     onSelect={field.onChange}
-                    // disabled={(date) =>
-                    //   date < new Date(new Date().setHours(0, 0, 0, 0))
-                    // }
                     initialFocus
                   />
                 </PopoverContent>
@@ -218,12 +232,20 @@ export default function CarSearchForm() {
                 value={field.value}
                 onChange={field.onChange}
                 disabled={returnToSameLocation}
+                className={
+                  returnToSameLocation ? "opacity-70 cursor-not-allowed" : ""
+                }
               />
             )}
           />
-          {errors.dropoffLocation?.name && (
+          {errors.dropoffLocation?.name && !returnToSameLocation && (
             <p className="text-red-400 text-xs mt-1">
               {errors.dropoffLocation.name.message}
+            </p>
+          )}
+          {returnToSameLocation && (
+            <p className="text-xs text-gray-400 mt-1">
+              Same as pick-up location
             </p>
           )}
         </div>
@@ -252,7 +274,6 @@ export default function CarSearchForm() {
                     mode="single"
                     selected={field.value}
                     onSelect={field.onChange}
-                    // disabled={(date) => date < watch("pickupDate")}
                     initialFocus
                   />
                 </PopoverContent>
@@ -305,11 +326,18 @@ export default function CarSearchForm() {
             render={({ field }) => (
               <Checkbox
                 checked={field.value}
-                onCheckedChange={field.onChange}
+                onCheckedChange={(checked) => {
+                  field.onChange(checked);
+                  // When checked, set dropoff location to pickup location
+                  if (checked) {
+                    setValue("dropoffLocation", watch("pickupLocation"));
+                  }
+                }}
+                id="return-checkbox"
               />
             )}
           />
-          <Label className="text-sm cursor-pointer">
+          <Label htmlFor="return-checkbox" className="text-sm cursor-pointer">
             Return to same location
           </Label>
         </div>
