@@ -235,7 +235,7 @@ export default function HotelSearchForm() {
   );
 
   return (
-    <div className="bg-dark-blue p-6 md:p-8 rounded-3xl text-white max-w-6xl mx-auto shadow-lg">
+    <div className="bg-dark-blue p-6 md:p-8 rounded-3xl text-white max-w-7xl mx-auto shadow-lg">
       <div className="w-full grid grid-cols-1 md:grid-cols-4 xl:grid-cols-9 gap-2 items-end">
         {/* Destination input */}
         <div className="md:col-span-2">
@@ -358,10 +358,10 @@ export default function HotelSearchForm() {
         </div>
 
         {/* Search Button */}
-        <div className="mt-4 md:mt-0 md:col-span-2 xl:col-span-1">
+        <div className="mt-4 md:mt-0 md:col-span-2 xl:col-span-1 w-fit">
           <Button
             onClick={handleSearch}
-            className="bg-blue-600 hover:bg-blue-700 text-white w-full h-12"
+            className="bg-blue-600 hover:bg-blue-700 text-white w-full h-12 px-4"
           >
             <Search className="mr-1 h-4" />
             Search Hotels

@@ -21,9 +21,16 @@ export const Topbar = () => {
             </Link>
           </li>
           <li>
-            <Button className="" variant={"ghost"} onClick={logout}>
+            <Link to={"/payments"}>
+              <Button className="" variant={"ghost"}>
+                Payments{" "}
+              </Button>
+            </Link>
+          </li>
+          <li>
+            {/* <Button className="" variant={"ghost"} onClick={logout}>
               Logout
-            </Button>
+            </Button> */}
           </li>
           <li>
             <DropdownOptions />

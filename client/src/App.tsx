@@ -15,6 +15,7 @@ import OtpVerification from "./components/auth/OtpVerification";
 import OTPSuccess from "./components/auth/Otp-success";
 import HotelSearchResult from "./pages/hotels/hotel-search-result";
 import CarSearchResult from "./pages/cars/car-search-result";
+import PaymentPage from "./pages/payment/PaymentPage";
 
 const App = () => {
   return (
@@ -40,6 +41,7 @@ const App = () => {
         <Route path="/" element={<MainLayout />}>
           <Route index element={<HomePage />} />
           <Route path="flights" element={<FlightPage />} />
+          <Route path="payments" element={<PaymentPage />} />
           <Route path="flight/search" element={<FlightResult />} />
           <Route path="hotels" element={<HotelPage />} />
           <Route path="hotels/search" element={<HotelSearchResult />} />

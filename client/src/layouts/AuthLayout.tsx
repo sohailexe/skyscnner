@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { Outlet } from "react-router-dom";
 import { motion } from "framer-motion";
-import Logo from "../components/Logo";
+
 import Navbar from "@/components/Navbar/Navbar";
 
 const travelImageUrls: string[] = [
-  "https://images.pexels.com/photos/3155666/pexels-photo-3155666.jpeg",
   "https://images.pexels.com/photos/3769138/pexels-photo-3769138.jpeg",
-  "https://images.pexels.com/photos/2325446/pexels-photo-2325446.jpeg",
+  "https://images.pexels.com/photos/244206/pexels-photo-244206.jpeg",
+  "https://images.pexels.com/photos/338504/pexels-photo-338504.jpeg",
 ];
 const AuthLayout: React.FC = () => {
   const [currentBg, setCurrentBg] = useState(0);
@@ -15,7 +15,7 @@ const AuthLayout: React.FC = () => {
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentBg((prev) => (prev + 1) % travelImageUrls.length);
-    }, 8000);
+    }, 3000);
 
     return () => clearInterval(interval);
   }, []);
