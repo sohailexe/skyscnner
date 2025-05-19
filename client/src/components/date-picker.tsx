@@ -17,22 +17,26 @@ import {
 
 interface DatePickerProps {
   date?: Date;
-  onDateChange?: (date: Date | undefined) => void;
+  setDate: (date: Date | undefined) => void;
   startYear?: number;
   endYear?: number;
   placeholder?: string;
   className?: string;
-  buttonRef?: React.RefObject<HTMLButtonElement | null>;
+  buttonRef?: React.RefObject<HTMLButtonElement> | null;
+  fromDate?: Date; // Minimum selectable date
+  toDate?: Date; // Maximum selectable date
 }
 
 export function DatePicker({
   date,
-  onDateChange,
-  startYear = new Date().getFullYear() - 1,
-  endYear = new Date().getFullYear() + 2,
+  setDate,
+  startYear = new Date().getFullYear(),
+  endYear = new Date().getFullYear() + 5,
   placeholder = "Select date",
   className,
   buttonRef,
+  fromDate,
+  toDate,
 }: DatePickerProps) {
   const months = [
     "January",
@@ -49,9 +53,19 @@ export function DatePicker({
     "December",
   ];
 
+  // Adjust the year range based on fromDate if provided
+  const actualStartYear = fromDate
+    ? Math.max(startYear, fromDate.getFullYear())
+    : startYear;
+
+  // Adjust the year range based on toDate if provided
+  const actualEndYear = toDate
+    ? Math.min(endYear, toDate.getFullYear())
+    : endYear;
+
   const years = Array.from(
-    { length: endYear - startYear + 1 },
-    (_, i) => startYear + i
+    { length: actualEndYear - actualStartYear + 1 },
+    (_, i) => actualStartYear + i
   );
 
   // Helper functions to replace date-fns
@@ -66,18 +80,51 @@ export function DatePicker({
   const setMonth = (date: Date, monthIndex: number) => {
     const newDate = new Date(date);
     newDate.setMonth(monthIndex);
+
+    // Validate month change doesn't make date invalid with fromDate
+    if (fromDate && newDate < fromDate) {
+      // If setting this month makes the date before fromDate,
+      // use fromDate's day but keep the selected month/year
+      newDate.setDate(fromDate.getDate());
+
+      // If still invalid, use fromDate's month too
+      if (newDate < fromDate) {
+        return fromDate;
+      }
+    }
+
+    // Validate month change doesn't make date invalid with toDate
+    if (toDate && newDate > toDate) {
+      // If setting this month makes the date after toDate,
+      // adjust to the last day of the allowed range
+      return toDate;
+    }
+
     return newDate;
   };
 
   const setYear = (date: Date, year: number) => {
     const newDate = new Date(date);
     newDate.setFullYear(year);
+
+    // Validate year change doesn't make date invalid with fromDate
+    if (fromDate && newDate < fromDate) {
+      // If changing to this year makes the date before fromDate,
+      // adjust the date to be at least fromDate
+      return new Date(Math.max(newDate.getTime(), fromDate.getTime()));
+    }
+
+    // Validate year change doesn't make date invalid with toDate
+    if (toDate && newDate > toDate) {
+      // If changing to this year makes the date after toDate,
+      // adjust the date to be at most toDate
+      return new Date(Math.min(newDate.getTime(), toDate.getTime()));
+    }
+
     return newDate;
   };
 
-  const format = (date: Date, formatStr: string) => {
-    // console.log("Formatting date:", date, "with format:", formatStr);
-
+  const format = (date: Date) => {
     // Simple formatter for "MMM dd, yyyy" format
     const monthAbbr = months[date.getMonth()].substring(0, 3);
     const day = date.getDate();
@@ -88,30 +135,54 @@ export function DatePicker({
 
   const handleMonthChange = (month: string) => {
     if (!date) {
-      const newDate = new Date();
-      newDate.setMonth(months.indexOf(month));
-      onDateChange?.(newDate);
+      // Create a new date starting with today or fromDate (whichever is later)
+      const baseDate =
+        fromDate && fromDate > new Date() ? fromDate : new Date();
+      const newDate = setMonth(baseDate, months.indexOf(month));
+      setDate(newDate);
       return;
     }
 
     const newDate = setMonth(date, months.indexOf(month));
-    onDateChange?.(newDate);
+    setDate(newDate);
   };
 
   const handleYearChange = (year: string) => {
     if (!date) {
-      const newDate = new Date();
-      newDate.setFullYear(parseInt(year));
-      onDateChange?.(newDate);
+      // Create a new date starting with today or fromDate (whichever is later)
+      const baseDate =
+        fromDate && fromDate > new Date() ? fromDate : new Date();
+      const newDate = setYear(baseDate, parseInt(year));
+      setDate(newDate);
       return;
     }
 
     const newDate = setYear(date, parseInt(year));
-    onDateChange?.(newDate);
+    setDate(newDate);
   };
 
-  const handleSelect = (selectedDate: Date | undefined) => {
-    onDateChange?.(selectedDate);
+  // Determine the current displayed month/year considering validation constraints
+  const getDisplayDate = () => {
+    if (date) return date;
+
+    // No date selected yet, show current month/year or fromDate if it's in the future
+    const now = new Date();
+    if (fromDate && fromDate > now) {
+      return fromDate;
+    }
+    return now;
+  };
+
+  // Get appropriate month value for dropdown
+  const getCurrentMonth = () => {
+    const displayDate = getDisplayDate();
+    return months[getMonth(displayDate)];
+  };
+
+  // Get appropriate year value for dropdown
+  const getCurrentYear = () => {
+    const displayDate = getDisplayDate();
+    return getYear(displayDate).toString();
   };
 
   return (
@@ -121,20 +192,17 @@ export function DatePicker({
           variant="outline"
           ref={buttonRef}
           className={cn(
-            "w-full justify-start text-left font-normal",
+            "w-full justify-start text-left border-none font-normal",
             !date && "text-gray-500",
             className
           )}
         >
-          {date ? format(date, "MMM dd, yyyy") : placeholder}
+          {date ? format(date) : placeholder}
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0" align="start">
         <div className="flex justify-between p-2">
-          <Select
-            onValueChange={handleMonthChange}
-            value={date ? months[getMonth(date)] : months[getMonth(new Date())]}
-          >
+          <Select onValueChange={handleMonthChange} value={getCurrentMonth()}>
             <SelectTrigger className="w-24">
               <SelectValue placeholder="Month" />
             </SelectTrigger>
@@ -146,12 +214,7 @@ export function DatePicker({
               ))}
             </SelectContent>
           </Select>
-          <Select
-            onValueChange={handleYearChange}
-            value={
-              date ? getYear(date).toString() : getYear(new Date()).toString()
-            }
-          >
+          <Select onValueChange={handleYearChange} value={getCurrentYear()}>
             <SelectTrigger className="w-24">
               <SelectValue placeholder="Year" />
             </SelectTrigger>
@@ -168,10 +231,11 @@ export function DatePicker({
         <Calendar
           mode="single"
           selected={date}
-          onSelect={handleSelect}
+          onSelect={setDate}
           initialFocus
-          month={date || new Date()}
-          defaultMonth={date || new Date()}
+          month={getDisplayDate()}
+          defaultMonth={getDisplayDate()}
+          // fromDate and toDate props removed because Calendar does not accept them
         />
       </PopoverContent>
     </Popover>

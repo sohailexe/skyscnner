@@ -1,4 +1,3 @@
-import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useFlightStore } from "@/store/flightStore";
 import FlightCard from "./FlightCard";

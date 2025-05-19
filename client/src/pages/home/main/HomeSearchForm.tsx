@@ -1,6 +1,5 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
-import { TextInput } from "@/pages/home/main/home-search/TextInput";
 import { SwapButton } from "@/pages/home/main/home-search/SwapButton";
 import { FlightOptions } from "@/pages/home/main/home-search/FlightOptions";
 import { toast } from "sonner";
@@ -10,7 +9,7 @@ import { useNavigate } from "react-router";
 import { DateInputField } from "@/pages/home/main/home-search/DateInputField";
 import { SearchButton } from "@/pages/home/main/home-search/Searchbtn";
 import { useFlightStore } from "@/store/flightStore";
-import { Popover } from "@radix-ui/react-popover";
+import { Popover } from "@/components/ui/popover";
 import { PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { LocationSearchInput } from "./search-input-field";
 
@@ -40,6 +39,10 @@ export default function HomeSearchForm() {
   const [isOpen, setIsOpen] = useState({ guests: false });
   const [adults, setAdults] = useState(1);
   const [children, setChildren] = useState<number[]>([]);
+
+  // Create today's date for validation
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
 
   // Helper functions
   const increment = (value: number, setter: (v: number) => void) =>
@@ -74,26 +77,62 @@ export default function HomeSearchForm() {
 
   const handleLocationChange =
     (field: "origin" | "destination") => (value: string) => {
-      setFormData((prev) => ({
-        ...prev,
-        [field]: {
-          ...prev[field],
-          name: value,
-        },
-      }));
+      // This function now just receives text input from the LocationSearchInput
+      // The actual location selection is handled in onSelect
+
+      // We only update errors here, but don't modify the form data
+      // since we only want valid selections to be stored
+      console.log(value);
 
       if (errors[field]) {
         setErrors((prev) => ({ ...prev, [field]: "" }));
       }
     };
 
-  const handleDate = (field: string) => (date: Date | undefined) => {
-    setFormData((prev) => ({ ...prev, [field]: date }));
-    // Clear error when user selects a date
-    if (errors[field]) {
-      setErrors((prev) => ({ ...prev, [field]: "" }));
-    }
-  };
+  const handleLocationSelect =
+    (field: "origin" | "destination") =>
+    (location: { name: string; code: string; type?: string }) => {
+      // This is called when a valid location is selected from suggestions
+      setFormData((prev) => ({
+        ...prev,
+        [field]: {
+          name: location.name,
+          code: location.code,
+        },
+      }));
+
+      // Clear any validation errors for this field
+      if (errors[field]) {
+        setErrors((prev) => ({ ...prev, [field]: "" }));
+      }
+    };
+
+  const handleDate =
+    (field: "departureDate" | "returnDate") => (date: Date | undefined) => {
+      setFormData((prev) => {
+        const newData = { ...prev, [field]: date };
+
+        // Special handling for date relationships
+        if (field === "departureDate" && date && prev.returnDate) {
+          // If departure date is after return date, clear return date or update error
+          if (date > prev.returnDate) {
+            // Option 1: Clear return date
+            newData.returnDate = undefined;
+            // Clear related error
+            if (errors.returnDate) {
+              setErrors((e) => ({ ...e, returnDate: "" }));
+            }
+          }
+        }
+
+        return newData;
+      });
+
+      // Clear error when user selects a date
+      if (errors[field]) {
+        setErrors((prev) => ({ ...prev, [field]: "" }));
+      }
+    };
 
   const handleCheckbox = (field: keyof typeof formData) => (checked: boolean) =>
     setFormData((prev) => ({ ...prev, [field]: checked }));
@@ -112,15 +151,26 @@ export default function HomeSearchForm() {
     const newErrors: Record<string, string> = {};
 
     if (!formData.origin.code) {
-      newErrors.origin = "Origin is required";
+      newErrors.origin = "Please select a valid origin from the suggestions";
     }
 
     if (!formData.destination.code) {
-      newErrors.destination = "Destination is required";
+      newErrors.destination =
+        "Please select a valid destination from the suggestions";
     }
 
     if (!formData.departureDate) {
       newErrors.departureDate = "Departure date is required";
+    } else if (formData.departureDate < today) {
+      newErrors.departureDate = "Departure date cannot be in the past";
+    }
+
+    if (
+      formData.returnDate &&
+      formData.departureDate &&
+      formData.returnDate < formData.departureDate
+    ) {
+      newErrors.returnDate = "Return date cannot be before departure date";
     }
 
     if (Object.keys(newErrors).length > 0) {
@@ -148,6 +198,7 @@ export default function HomeSearchForm() {
               const element = document.getElementById(firstErrorField);
               if (element) {
                 element.scrollIntoView({ behavior: "smooth" });
+                element.focus();
               }
             }}
           >
@@ -237,16 +288,7 @@ export default function HomeSearchForm() {
             label="From"
             value={formData.origin}
             onChange={handleLocationChange("origin")}
-            onSelect={(location) => {
-              // Store the full location object with both code and name
-              setFormData((prev) => ({
-                ...prev,
-                origin: {
-                  name: location.name,
-                  code: location.code,
-                },
-              }));
-            }}
+            onSelect={handleLocationSelect("origin")}
             error={errors.origin}
             className="rounded-t-2xl md:rounded-t-none md:rounded-l-2xl pr-6"
           />
@@ -261,16 +303,7 @@ export default function HomeSearchForm() {
             label="To"
             value={formData.destination}
             onChange={handleLocationChange("destination")}
-            onSelect={(location) => {
-              // Store the full location object with both code and name
-              setFormData((prev) => ({
-                ...prev,
-                destination: {
-                  name: location.name,
-                  code: location.code,
-                },
-              }));
-            }}
+            onSelect={handleLocationSelect("destination")}
             className="md:pl-8"
             error={errors.destination}
           />
@@ -285,6 +318,7 @@ export default function HomeSearchForm() {
             onChange={handleDate("departureDate")}
             error={errors.departureDate}
             buttonRef={departureRef}
+            minDate={today}
           />
         </motion.div>
 
@@ -294,114 +328,117 @@ export default function HomeSearchForm() {
             label="Return"
             value={formData.returnDate}
             onChange={handleDate("returnDate")}
-            className="rounded-b-2xl md:rounded-b-none md:rounded-r-2xl"
+            className="md:rounded-b-none"
             error={errors.returnDate}
             buttonRef={returnRef}
+            minDate={formData.departureDate || today}
           />
         </motion.div>
+        <motion.div className="md:col-span-2" variants={itemVariants}>
+          <Popover
+            open={isOpen.guests}
+            onOpenChange={(open: boolean) =>
+              setIsOpen((prev) => ({ ...prev, guests: open }))
+            }
+          >
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                className="w-full justify-start bg-white text-black h-17 md:col-span-1 rounded-none rounded-b-2xl md:rounded-b-none md:rounded-r-2xl"
+              >
+                {adults} Adult{adults > 1 ? "s" : ""}, {children.length} Child
+                {children.length !== 1 ? "ren" : ""}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-72 p-4" align="start">
+              <div className="space-y-4">
+                {/* Adults */}
+                <div>
+                  <h3 className="font-medium mb-2">Adults</h3>
+                  <div className="flex justify-between items-center">
+                    <span>Age 12+</span>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-8 w-8 p-0"
+                        onClick={() => decrement(adults, setAdults)}
+                        disabled={adults <= 1}
+                      >
+                        -
+                      </Button>
+                      <span>{adults}</span>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-8 w-8 p-0"
+                        onClick={() => increment(adults, setAdults)}
+                      >
+                        +
+                      </Button>
+                    </div>
+                  </div>
+                </div>
 
-        <Popover
-          open={isOpen.guests}
-          onOpenChange={(open: boolean) =>
-            setIsOpen((prev) => ({ ...prev, guests: open }))
-          }
-        >
-          <PopoverTrigger asChild>
-            <Button
-              variant="outline"
-              className="w-full justify-start bg-white text-black hover:bg-gray-100 h-12 md:col-span-1"
-            >
-              {adults} Adult{adults > 1 ? "s" : ""}, {children.length} Child
-              {children.length !== 1 ? "ren" : ""}
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-72 p-4" align="start">
-            <div className="space-y-4">
-              {/* Adults */}
-              <div>
-                <h3 className="font-medium mb-2">Adults</h3>
-                <div className="flex justify-between items-center">
-                  <span>Age 12+</span>
-                  <div className="flex items-center gap-2">
+                {/* Children */}
+                <div>
+                  <h3 className="font-medium mb-2">Children</h3>
+                  <div className="space-y-2">
+                    {children.map((age, index) => (
+                      <div
+                        key={index}
+                        className="flex justify-between items-center"
+                      >
+                        <span>Child {index + 1}</span>
+                        <input
+                          type="number"
+                          value={age}
+                          min={1}
+                          max={17}
+                          onChange={(e) =>
+                            setChildAge(index, Number(e.target.value))
+                          }
+                          className="w-16 p-1 rounded border text-black"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                  <div className="flex justify-end gap-2 mt-2">
                     <Button
                       size="sm"
                       variant="outline"
-                      className="h-8 w-8 p-0"
-                      onClick={() => decrement(adults, setAdults)}
-                      disabled={adults <= 1}
+                      className="h-8"
+                      onClick={addChild}
                     >
-                      -
+                      + Add Child
                     </Button>
-                    <span>{adults}</span>
                     <Button
                       size="sm"
                       variant="outline"
-                      className="h-8 w-8 p-0"
-                      onClick={() => increment(adults, setAdults)}
+                      className="h-8"
+                      onClick={removeChild}
+                      disabled={children.length === 0}
                     >
-                      +
+                      - Remove
                     </Button>
                   </div>
                 </div>
+
+                <Button className="w-full mt-4" onClick={applyGuestSelection}>
+                  Apply
+                </Button>
               </div>
+            </PopoverContent>
+          </Popover>
+        </motion.div>
+      </div>
 
-              {/* Children */}
-              <div>
-                <h3 className="font-medium mb-2">Children</h3>
-                <div className="space-y-2">
-                  {children.map((age, index) => (
-                    <div
-                      key={index}
-                      className="flex justify-between items-center"
-                    >
-                      <span>Child {index + 1}</span>
-                      <input
-                        type="number"
-                        value={age}
-                        min={1}
-                        max={17}
-                        onChange={(e) =>
-                          setChildAge(index, Number(e.target.value))
-                        }
-                        className="w-16 p-1 rounded border text-black"
-                      />
-                    </div>
-                  ))}
-                </div>
-                <div className="flex justify-end gap-2 mt-2">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="h-8"
-                    onClick={addChild}
-                  >
-                    + Add Child
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="h-8"
-                    onClick={removeChild}
-                    disabled={children.length === 0}
-                  >
-                    - Remove
-                  </Button>
-                </div>
-              </div>
-
-              <Button className="w-full mt-4" onClick={applyGuestSelection}>
-                Apply
-              </Button>
-            </div>
-          </PopoverContent>
-        </Popover>
-
+      <div className="py-2 md:py-4 ">
         {/* Search Button */}
         <motion.div className="md:col-span-1" variants={itemVariants}>
           <SearchButton isLoading={isLoading} />
         </motion.div>
       </div>
-
       <FlightOptions
         nearbyAirports={formData.nearbyAirports}
         directOnly={formData.directFlightsOnly}
