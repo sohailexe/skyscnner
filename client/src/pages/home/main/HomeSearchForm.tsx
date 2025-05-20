@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
 import { SwapButton } from "@/pages/home/main/home-search/SwapButton";
 import { FlightOptions } from "@/pages/home/main/home-search/FlightOptions";
@@ -11,18 +11,15 @@ import { SearchButton } from "@/pages/home/main/home-search/Searchbtn";
 import { useFlightStore } from "@/store/flightStore";
 import { Popover } from "@/components/ui/popover";
 import { PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { LocationSearchInput } from "./search-input-field";
-
-export interface Location {
-  name: string;
-  code: string;
-}
+import { LocationSearchInput, type Location } from "./search-input-field";
+import { getUserLocation } from "@/lib/getLocation";
+import { useAirports } from "@/store/useAirports";
 
 export default function HomeSearchForm() {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    origin: { name: "", code: "" } as Location,
-    destination: { name: "", code: "" } as Location,
+    origin: null as Location | null,
+    destination: null as Location | null,
     departureDate: undefined as Date | undefined,
     returnDate: undefined as Date | undefined,
     nearbyAirports: false,
@@ -31,7 +28,6 @@ export default function HomeSearchForm() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(false);
   const [rotated, setRotated] = useState(false);
-
   const departureRef = useRef<HTMLButtonElement>(null);
   const returnRef = useRef<HTMLButtonElement>(null);
 
@@ -39,10 +35,28 @@ export default function HomeSearchForm() {
   const [isOpen, setIsOpen] = useState({ guests: false });
   const [adults, setAdults] = useState(1);
   const [children, setChildren] = useState<number[]>([]);
+  const getnearbyAirports = useAirports((state) => state.nearby);
+  const setNearByAirports = useAirports((state) => state.setNearByAirports);
 
   // Create today's date for validation
   const today = new Date();
   today.setHours(0, 0, 0, 0);
+
+  useEffect(() => {
+    async function fetchUserLocation() {
+      try {
+        const response = await getUserLocation();
+        if (response) {
+          const airports = getnearbyAirports(response.lat, response.lng);
+          setNearByAirports(airports);
+        }
+      } catch (error) {
+        console.error("Failed to get user location:", error);
+      }
+    }
+
+    fetchUserLocation();
+  }, [getnearbyAirports, setNearByAirports]);
 
   // Helper functions
   const increment = (value: number, setter: (v: number) => void) =>
@@ -76,29 +90,10 @@ export default function HomeSearchForm() {
   };
 
   const handleLocationChange =
-    (field: "origin" | "destination") => (value: string) => {
-      // This function now just receives text input from the LocationSearchInput
-      // The actual location selection is handled in onSelect
-
-      // We only update errors here, but don't modify the form data
-      // since we only want valid selections to be stored
-      console.log(value);
-
-      if (errors[field]) {
-        setErrors((prev) => ({ ...prev, [field]: "" }));
-      }
-    };
-
-  const handleLocationSelect =
-    (field: "origin" | "destination") =>
-    (location: { name: string; code: string; type?: string }) => {
-      // This is called when a valid location is selected from suggestions
+    (field: "origin" | "destination") => (location: Location | null) => {
       setFormData((prev) => ({
         ...prev,
-        [field]: {
-          name: location.name,
-          code: location.code,
-        },
+        [field]: location,
       }));
 
       // Clear any validation errors for this field
@@ -114,9 +109,8 @@ export default function HomeSearchForm() {
 
         // Special handling for date relationships
         if (field === "departureDate" && date && prev.returnDate) {
-          // If departure date is after return date, clear return date or update error
+          // If departure date is after return date, clear return date
           if (date > prev.returnDate) {
-            // Option 1: Clear return date
             newData.returnDate = undefined;
             // Clear related error
             if (errors.returnDate) {
@@ -150,12 +144,20 @@ export default function HomeSearchForm() {
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
 
-    if (!formData.origin.code) {
-      newErrors.origin = "select value form suggetions";
+    if (!formData.origin?.code) {
+      newErrors.origin = "Please select an origin airport";
     }
 
-    if (!formData.destination.code) {
-      newErrors.destination = "select value form suggetions";
+    if (!formData.destination?.code) {
+      newErrors.destination = "Please select a destination airport";
+    }
+
+    if (
+      formData.origin?.code &&
+      formData.destination?.code &&
+      formData.origin.code === formData.destination.code
+    ) {
+      newErrors.destination = "Origin and destination cannot be the same";
     }
 
     if (!formData.departureDate) {
@@ -184,8 +186,9 @@ export default function HomeSearchForm() {
     e.preventDefault();
 
     if (!validateForm()) {
-      toast("Please fill in all required fields", {
-        description: "Make sure to provide valid input for all fields.",
+      toast("Please fix the errors in the form", {
+        description:
+          "Make sure to provide valid input for all required fields.",
         icon: <AlertCircle className="h-4 w-4" />,
         action: (
           <Button
@@ -212,8 +215,8 @@ export default function HomeSearchForm() {
 
     try {
       const payload = {
-        fromLocation: formData.origin.code,
-        toLocation: formData.destination.code,
+        fromLocation: formData.origin!.code,
+        toLocation: formData.destination!.code,
         departureDate: formData.departureDate
           ? formData.departureDate.toISOString().split("T")[0]
           : "2025-06-10",
@@ -226,9 +229,8 @@ export default function HomeSearchForm() {
           children: children.map((age) => ({ age })),
         },
       };
-      console.log(payload);
 
-      fetchFlights(payload);
+      await fetchFlights(payload);
       navigate("/flight/search");
     } catch (error) {
       console.error("Flight search failed:", error);
@@ -285,11 +287,11 @@ export default function HomeSearchForm() {
           <LocationSearchInput
             id="origin"
             label="From"
+            placeholder="Where are you flying from?"
             value={formData.origin}
             onChange={handleLocationChange("origin")}
-            onSelect={handleLocationSelect("origin")}
             error={errors.origin}
-            className="rounded-t-2xl md:rounded-t-none md:rounded-l-2xl pr-6"
+            className="rounded-t-2xl md:rounded-t-none md:rounded-l-2xl py-0.5 pr-6 pl-2 bg-white"
           />
           <div className="absolute right-0 translate-x-1/2 top-1/2 -translate-y-1/2 z-10">
             <SwapButton rotated={rotated} onClick={swap} />
@@ -300,10 +302,10 @@ export default function HomeSearchForm() {
           <LocationSearchInput
             id="destination"
             label="To"
+            placeholder="Where are you flying to?"
             value={formData.destination}
             onChange={handleLocationChange("destination")}
-            onSelect={handleLocationSelect("destination")}
-            className="md:pl-8"
+            className="md:pl-4 py-0.5 bg-white"
             error={errors.destination}
           />
         </motion.div>
@@ -333,6 +335,7 @@ export default function HomeSearchForm() {
             minDate={formData.departureDate || today}
           />
         </motion.div>
+
         <motion.div className="md:col-span-2" variants={itemVariants}>
           <Popover
             open={isOpen.guests}
@@ -432,12 +435,13 @@ export default function HomeSearchForm() {
         </motion.div>
       </div>
 
-      <div className="py-2 md:py-4 ">
+      <div className="py-2 md:py-4">
         {/* Search Button */}
         <motion.div className="md:col-span-1" variants={itemVariants}>
           <SearchButton isLoading={isLoading} />
         </motion.div>
       </div>
+
       <FlightOptions
         nearbyAirports={formData.nearbyAirports}
         directOnly={formData.directFlightsOnly}

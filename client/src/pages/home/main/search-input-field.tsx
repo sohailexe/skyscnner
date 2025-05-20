@@ -1,324 +1,279 @@
-import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { Card } from "@/components/ui/card";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { MapPin, Plane } from "lucide-react";
-import { Location } from "./HomeSearchForm"; // Assuming this path is correct
-
-// Animation variants
-const itemVariants = {
-  hidden: { opacity: 0, y: 10 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: { type: "spring", stiffness: 500, damping: 24 },
-  },
-};
-
-// Define types for location suggestions
-interface LocationSuggestion {
+import { useState, useEffect, useRef } from "react";
+import { MapPin, Plane, Search } from "lucide-react";
+import { useAirports } from "@/store/useAirports";
+// Types
+export interface Location {
   name: string;
   code: string;
-  country_name: string;
   type: "airport" | "city";
-  country_code?: string;
-  coordinates?: {
-    lat: number;
-    lon: number;
-  };
-  weight?: number;
-  index_strings?: string[];
+  country?: string;
 }
 
-export interface LocationSearchInputProps {
+interface LocationSearchInputProps {
   id: string;
   label?: string;
-  value: Location | undefined;
-  onChange: (value: string) => void; // Note: Parent receives name on type, code on select
   placeholder?: string;
+  value?: Location | null;
+  onChange: (location: Location | null) => void;
   className?: string;
-  error?: string; // Error from parent (e.g., form validation)
-  showLabel?: boolean;
-  onSelect?: (location: LocationSuggestion) => void;
+  error?: string;
 }
 
 export function LocationSearchInput({
   id,
   label,
+  placeholder = "Search destination...",
   value,
   onChange,
-  placeholder = "Country, city or airport",
   className = "",
-  showLabel = true,
-  error, // Prop for parent-controlled errors
-  onSelect,
+  error,
 }: LocationSearchInputProps) {
-  const [searchTerm, setSearchTerm] = useState<Location>({
-    name: "",
-    code: "",
-  });
   const [inputValue, setInputValue] = useState("");
-  const [suggestions, setSuggestions] = useState<LocationSuggestion[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [isFocused, setIsFocused] = useState<boolean>(false);
-  const [apiError, setApiError] = useState<string | null>(null); // State for API specific errors
-  const [validSelection, setValidSelection] = useState<boolean>(false); // Track if user selected from suggestions
+  const [isOpen, setIsOpen] = useState(false);
+  const [suggestions, setSuggestions] = useState<Location[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
-  // Update searchTerm and inputValue when value changes from parent
+  // Get airports store functions and data
+  const {
+    nearByAirports,
+    suggest,
+    fetchAll,
+    loading: storeLoading,
+  } = useAirports();
+
+  // Initialize airports data on mount
+  useEffect(() => {
+    fetchAll();
+  }, [fetchAll]);
+
+  // Update input value when prop value changes
   useEffect(() => {
     if (value) {
-      setSearchTerm(value);
       setInputValue(value.name);
-      // If there's a code, it means a valid selection was made previously
-      setValidSelection(!!value.code);
     } else {
-      // If parent clears value, reset searchTerm
-      setSearchTerm({ name: "", code: "" });
       setInputValue("");
-      setValidSelection(false);
     }
   }, [value]);
 
-  // Fetch suggestions when inputValue changes
   useEffect(() => {
-    const fetchSuggestions = async (): Promise<void> => {
-      if (!inputValue || inputValue.length < 2) {
-        setSuggestions([]);
-        setApiError(null); // Clear API error if search term is too short
-        return;
+    if (inputValue.trim() === "" && isOpen) {
+      const nearbyLocations: Location[] = nearByAirports.map((airport) => ({
+        name: airport.name,
+        code: airport.iata,
+        type: "airport" as const,
+        country: airport.city, // Using city as country for now
+      }));
+      setSuggestions(nearbyLocations);
+    }
+  }, [inputValue, isOpen, nearByAirports]);
+
+  // Search function with debounce
+  useEffect(() => {
+    if (inputValue.trim() === "") return;
+
+    searchLocations(inputValue);
+  }, [inputValue]);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(event.target as Node)
+      ) {
+        setIsOpen(false);
       }
+    }
 
-      setIsLoading(true);
-      setApiError(null); // Clear previous API error before a new request
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
-      try {
-        const response = await fetch(
-          `https://autocomplete.travelpayouts.com/places2?locale=en&types[]=airport&types[]=city&term=${encodeURIComponent(
-            inputValue
-          )}`
-        );
+  const searchLocations = (query: string) => {
+    setIsLoading(true);
 
-        if (!response.ok) {
-          let errorMessage = `API request failed: ${response.statusText} (Status: ${response.status})`;
-          try {
-            // Attempt to parse a more specific error message from the API response body
-            const errorData = await response.json();
-            if (errorData && (errorData.message || errorData.error)) {
-              errorMessage = errorData.message || errorData.error;
-            }
-          } catch (parseError) {
-            // If parsing the error response fails, stick with the status code message
-            console.warn("Could not parse error response body:", parseError);
-          }
-          throw new Error(errorMessage);
-        }
+    try {
+      // Use the suggest function from your airports store
+      const searchResults = suggest(query, 10);
 
-        const data = (await response.json()) as LocationSuggestion[];
-        setSuggestions(data);
-        if (data.length === 0) {
-          // You could set a "no results" message here if desired, e.g.:
-          // setApiError("No locations found matching your search.");
-          // For now, an empty suggestion list is the indicator.
-        }
-      } catch (err) {
-        console.error("Error fetching suggestions:", err);
-        setSuggestions([]); // Clear suggestions on error
-        if (err instanceof Error) {
-          setApiError(
-            err.message ||
-              "Failed to fetch suggestions. Please check your connection or try again."
-          );
-        } else {
-          setApiError("An unknown error occurred while fetching suggestions.");
-        }
-      } finally {
-        setIsLoading(false);
-      }
-    };
+      // Convert Airport[] to Location[]
+      const locations: Location[] = searchResults.map((airport) => ({
+        name: airport.name,
+        code: airport.iata,
+        type: "airport" as const,
+        country: airport.city,
+      }));
 
-    // Debounce function to avoid too many API calls
-    const timeoutId = setTimeout(() => {
-      fetchSuggestions();
-    }, 300);
-
-    return () => clearTimeout(timeoutId);
-  }, [inputValue]); // Depend only on inputValue for fetching
-
-  const handleSelect = (item: LocationSuggestion): void => {
-    const selectedLocation = {
-      code: item.code,
-      name: item.name,
-    };
-
-    setSearchTerm(selectedLocation); // This will update the input display
-    setInputValue(item.name); // Update the input field text
-    setValidSelection(true); // Mark that a valid selection was made
-
-    onChange(selectedLocation.code); // Pass the code to the parent component
-    setSuggestions([]); // Hide suggestions
-    setApiError(null); // Clear any API errors on successful selection
-    setIsFocused(false); // Manually blur or ensure suggestions hide
-
-    if (onSelect) {
-      onSelect(item);
+      setSuggestions(locations);
+    } catch (error) {
+      console.error("Search error:", error);
+      setSuggestions([]);
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
     setInputValue(newValue);
-    setValidSelection(false); // Reset validation when user types
 
-    // Only update the parent with the current text (not as a valid selection)
-    onChange(newValue);
-
-    // Reset the code since we're now typing something new
-    setSearchTerm({ name: newValue, code: "" });
-  };
-
-  const handleInputFocus = (): void => {
-    setIsFocused(true);
-
-    // If there's no valid selection but there is text,
-    // re-trigger suggestions to show options
-    if (!validSelection && inputValue.length >= 2) {
-      // This will trigger the useEffect that fetches suggestions
-      setInputValue(inputValue + " ");
-      setInputValue(inputValue);
+    if (newValue.trim() === "") {
+      // Show nearby airports when input is cleared
+      const nearbyLocations: Location[] = nearByAirports.map((airport) => ({
+        name: airport.name,
+        code: airport.iata,
+        type: "airport" as const,
+        country: airport.city,
+      }));
+      setSuggestions(nearbyLocations);
+      onChange(null);
     }
   };
 
-  const handleInputBlur = (): void => {
-    // Delay hiding suggestions to allow clicks on suggestion items
-    setTimeout(() => {
-      setIsFocused(false);
-
-      // If there was no valid selection made but text remains,
-      // clear the input to enforce selection from suggestions only
-      if (!validSelection && inputValue) {
-        setInputValue("");
-        setSearchTerm({ name: "", code: "" });
-        onChange(""); // Notify parent that the value was cleared
-      }
-    }, 200);
+  const handleInputFocus = () => {
+    setIsOpen(true);
+    if (inputValue.trim() === "") {
+      // Show nearby airports on focus
+      const nearbyLocations: Location[] = nearByAirports.map((airport) => ({
+        name: airport.name,
+        code: airport.iata,
+        type: "airport" as const,
+        country: airport.city,
+      }));
+      setSuggestions(nearbyLocations);
+    }
   };
 
-  // Determine which error to display: API error takes precedence over prop error
-  const displayedError =
-    apiError ||
-    error ||
-    (!validSelection && inputValue
-      ? "Please select a location from the suggestions"
-      : "");
+  const handleLocationSelect = (location: Location) => {
+    setInputValue(location.name);
+    setIsOpen(false);
+    onChange(location);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Escape") {
+      setIsOpen(false);
+    }
+  };
+
+  // Check if we should show loading state
+  const showLoading = isLoading || storeLoading;
 
   return (
-    <div className="flex flex-col">
-      <motion.div
-        className={`bg-white px-2 py-1 md:px-4 md:py-3 relative ${className}`}
-        variants={itemVariants}
-      >
-        {showLabel && (
-          <Label htmlFor={id} className="text-sm text-gray-500 block mb-1">
+    <>
+      <div ref={containerRef} className={`relative w-full ${className}`}>
+        {/* Label */}
+        {label && (
+          <label
+            htmlFor={id}
+            className="block text-sm font-medium text-gray-700 mb-1"
+          >
             {label}
-          </Label>
+          </label>
         )}
+
+        {/* Input Field */}
         <div className="relative">
-          <Input
+          <div className="absolute inset-y-0 left-0 pl-1 flex items-center pointer-events-none">
+            <Search className="h-4 w-4 text-gray-400" />
+          </div>
+
+          <input
+            ref={inputRef}
             id={id}
+            type="text"
             value={inputValue}
             onChange={handleInputChange}
             onFocus={handleInputFocus}
-            onBlur={handleInputBlur}
+            onKeyDown={handleKeyDown}
             placeholder={placeholder}
-            className={`border-0 p-0 bg-white text-black font-medium focus-visible:ring-0 h-auto ${
-              !validSelection && inputValue ? "border-red-500" : ""
-            }`}
-            aria-label={`Search for ${label?.toLowerCase() || "location"}`}
-            aria-invalid={!!displayedError}
-            aria-describedby={displayedError ? `${id}-error` : undefined}
+            className={`
+            w-full pl-7 py-2 text-black border-none focus:ring-0 focus:outline-none 
+          `}
+            autoComplete="off"
           />
 
-          {isLoading && (
-            <div className="absolute right-1 top-1/2 transform -translate-y-1/2">
-              <div
-                className="h-4 w-4 border-2 border-t-transparent border-blue-500 rounded-full animate-spin"
-                aria-hidden="true"
-              ></div>
+          {/* Loading Spinner */}
+          {showLoading && (
+            <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
+              <div className="animate-spin h-4 w-4 border-2 border-blue-500 border-t-transparent rounded-full"></div>
             </div>
           )}
 
-          {validSelection && (
-            <div className="absolute right-2 top-1/2 transform -translate-y-1/2 text-xs text-gray-500 bg-gray-100 px-1 rounded">
-              {searchTerm.code}
+          {/* Selected Location Code */}
+          {value && !isOpen && (
+            <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
+              <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">
+                {value.code}
+              </span>
             </div>
           )}
         </div>
 
-        {isFocused &&
-          suggestions.length > 0 &&
-          !apiError && ( // Don't show suggestions if there's an API error
-            <AnimatePresence>
-              <motion.div
-                initial={{ opacity: 0, y: 5 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 5 }}
-                className="absolute left-0 right-0 z-50 mt-1 w-full" // Ensure full width
-              >
-                <Card className="overflow-hidden border shadow-lg">
-                  <ScrollArea className="max-h-64">
-                    <div className="p-1">
-                      {suggestions.map((item) => (
-                        <div
-                          key={`${item.type}-${item.code}`}
-                          className="flex items-center p-2 hover:bg-gray-100 rounded cursor-pointer"
-                          onClick={() => handleSelect(item)}
-                          onMouseDown={(e) => e.preventDefault()} // Prevents input blur before click
-                          role="option"
-                          aria-selected={false}
-                        >
-                          {item.type === "airport" ? (
-                            <Plane
-                              className="h-4 w-4 mr-2 text-blue-500"
-                              aria-hidden="true"
-                            />
-                          ) : (
-                            <MapPin
-                              className="h-4 w-4 mr-2 text-green-500"
-                              aria-hidden="true"
-                            />
-                          )}
-                          <div>
-                            <div className="font-medium">{item.name}</div>
-                            <div className="text-xs text-gray-500">
-                              {item.country_name}
-                              {item.type === "airport" && ` • ${item.code}`}
-                            </div>
-                          </div>
-                        </div>
-                      ))}
+        {/* Error Message */}
+
+        {/* Suggestions Dropdown */}
+        {isOpen && (
+          <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-64 overflow-y-auto">
+            {/* Header for nearby airports */}
+            {inputValue.trim() === "" && nearByAirports.length > 0 && (
+              <div className="px-3 py-2 text-xs font-medium text-gray-500 bg-gray-50 border-b">
+                Nearby Airports
+              </div>
+            )}
+
+            {/* Suggestions List */}
+            {suggestions.length > 0 ? (
+              <div className="py-1">
+                {suggestions.map((location, index) => (
+                  <button
+                    key={`${location.code}-${index}`}
+                    type="button"
+                    onClick={() => handleLocationSelect(location)}
+                    className="w-full px-3 py-2 text-left hover:bg-gray-50 focus:bg-gray-50 focus:outline-none flex items-center gap-3"
+                  >
+                    {/* Icon */}
+                    <div className="flex-shrink-0">
+                      {location.type === "airport" ? (
+                        <Plane className="h-4 w-4 text-blue-500" />
+                      ) : (
+                        <MapPin className="h-4 w-4 text-green-500" />
+                      )}
                     </div>
-                  </ScrollArea>
-                </Card>
-              </motion.div>
-            </AnimatePresence>
-          )}
-      </motion.div>
-      <AnimatePresence>
-        {displayedError && (
-          <motion.p
-            id={`${id}-error`}
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            className="text-xs text-red-500 mt-1 px-2 md:px-4 " // Added padding to align with input area
-            role="alert" // For accessibility
-          >
-            {displayedError}
-          </motion.p>
+
+                    {/* Location Info */}
+                    <div className="flex-1 min-w-0">
+                      <div className="font-medium text-gray-900 truncate">
+                        {location.name}
+                      </div>
+                      <div className="text-sm text-gray-500 flex items-center gap-1">
+                        <span>{location.country}</span>
+                        {location.type === "airport" && (
+                          <>
+                            <span>•</span>
+                            <span className="font-medium">{location.code}</span>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <div className="px-3 py-4 text-sm text-gray-500 text-center">
+                {showLoading
+                  ? "Searching..."
+                  : inputValue.trim() === ""
+                  ? "No nearby airports found"
+                  : "No airports found"}
+              </div>
+            )}
+          </div>
         )}
-      </AnimatePresence>
-    </div>
+      </div>
+      {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
+    </>
   );
 }

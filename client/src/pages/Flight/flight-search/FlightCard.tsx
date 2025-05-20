@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Plane, Clock } from "lucide-react";
 import { FlightResult } from "@/store/flightStore";
+import { useAirports } from "@/store/useAirports";
 
 interface FlightCardProps {
   flight: FlightResult;
@@ -26,6 +27,7 @@ const cardVariants = {
 };
 
 const FlightCard: React.FC<FlightCardProps> = ({ flight }) => {
+  const getAiportByIata = useAirports((state) => state.getAiportByIata);
   return (
     <motion.div
       variants={cardVariants}
@@ -50,7 +52,7 @@ const FlightCard: React.FC<FlightCardProps> = ({ flight }) => {
                   {flight.departureTime}
                 </div>
                 <div className="text-xs text-slate-500 uppercase tracking-wide">
-                  {flight.from}
+                  {getAiportByIata(flight.from)?.city}
                 </div>
               </div>
               <div className="flex flex-col items-center flex-shrink-0 text-slate-500 mx-1 sm:mx-2 group-hover:text-sky-600 transition-colors">
@@ -64,7 +66,7 @@ const FlightCard: React.FC<FlightCardProps> = ({ flight }) => {
                   {flight.arrivalTime}
                 </div>
                 <div className="text-xs text-slate-500 uppercase tracking-wide">
-                  {flight.to}
+                  {getAiportByIata(flight.to)?.city}
                 </div>
               </div>
             </div>

@@ -16,8 +16,17 @@ import OTPSuccess from "./components/auth/Otp-success";
 import HotelSearchResult from "./pages/hotels/hotel-search-result";
 import CarSearchResult from "./pages/cars/car-search-result";
 import PaymentPage from "./pages/payment/PaymentPage";
-
+import { useAirports } from "./store/useAirports";
+import { useEffect } from "react";
 const App = () => {
+  const fetchAll = useAirports((state) => state.fetchAll);
+  useEffect(() => {
+    const fetchAirports = async () => {
+      await fetchAll();
+    };
+    fetchAirports();
+  }, []);
+
   return (
     <Router>
       <Routes>
