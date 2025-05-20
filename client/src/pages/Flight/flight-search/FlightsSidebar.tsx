@@ -162,7 +162,7 @@ const FlightsSidebar = () => {
                 <Checkbox
                   id={`stops-${opt.value}`}
                   checked={activeFilters.stops.includes(opt.value)}
-                  onCheckedChange={(checked) =>
+                  onCheckedChange={(checked: boolean) =>
                     handleStopsChange(opt.value, !!checked)
                   }
                   className="border-slate-400 data-[state=checked]:bg-sky-600 data-[state=checked]:border-sky-600"
@@ -193,7 +193,7 @@ const FlightsSidebar = () => {
                   <Checkbox
                     id={`airline-${airline.replace(/\s+/g, "-")}`}
                     checked={activeFilters.airlines.includes(airline)}
-                    onCheckedChange={(checked) =>
+                    onCheckedChange={(checked: boolean) =>
                       handleAirlineChange(airline, !!checked)
                     }
                     className="border-slate-400 data-[state=checked]:bg-sky-600 data-[state=checked]:border-sky-600"
@@ -283,7 +283,7 @@ const FlightsSidebar = () => {
                   <Checkbox
                     id={`cabin-${cc.toLowerCase().replace(/\s+/g, "-")}`}
                     checked={activeFilters.cabinClasses.includes(cc)}
-                    onCheckedChange={(checked) =>
+                    onCheckedChange={(checked: boolean) =>
                       handleCabinClassChange(cc, !!checked)
                     }
                     className="border-slate-400 data-[state=checked]:bg-sky-600 data-[state=checked]:border-sky-600"

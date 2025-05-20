@@ -22,7 +22,7 @@ interface DatePickerProps {
   endYear?: number;
   placeholder?: string;
   className?: string;
-  buttonRef?: React.RefObject<HTMLButtonElement> | null;
+  buttonRef?: React.RefObject<HTMLButtonElement | null>;
   fromDate?: Date; // Minimum selectable date
   toDate?: Date; // Maximum selectable date
 }

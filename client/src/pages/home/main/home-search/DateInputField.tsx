@@ -20,7 +20,7 @@ export interface DateInputFieldProps {
   onChange: (date: Date | undefined) => void;
   className?: string;
   error?: string;
-  buttonRef: React.RefObject<HTMLButtonElement> | null;
+  buttonRef: React.RefObject<HTMLButtonElement | null>;
   minDate?: Date; // Minimum selectable date
   maxDate?: Date; // Maximum selectable date
 }
@@ -32,7 +32,7 @@ export function DateInputField({
   onChange,
   className = "",
   error,
-  buttonRef = null,
+  buttonRef,
   minDate,
   maxDate,
 }: DateInputFieldProps) {
@@ -88,7 +88,7 @@ export function DateInputField({
   }, [error]);
 
   return (
-    <div className="relative">
+    <div className="relative flex flex-col gap-5">
       <div
         className={`flex flex-col relative bg-white px-4 py-1.5 text-black ${className}`}
         id={id}
@@ -118,20 +118,23 @@ export function DateInputField({
           />
         </div>
       </div>
-
-      {/* Error message display */}
-      <AnimatePresence>
-        {(localError || error) && (
-          <motion.p
-            initial={{ opacity: 0, y: -5 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -5 }}
-            className="text-red-500 text-xs absolute -bottom-5 left-0"
-          >
-            {localError || error}
-          </motion.p>
-        )}
-      </AnimatePresence>
+      {(localError || error) && (
+        <div>
+          {/* Error message display */}
+          <AnimatePresence>
+            {(localError || error) && (
+              <motion.p
+                initial={{ opacity: 0, y: -5 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -5 }}
+                className="text-red-500 text-xs absolute -bottom-5 left-0"
+              >
+                {localError || error}
+              </motion.p>
+            )}
+          </AnimatePresence>
+        </div>
+      )}
     </div>
   );
 }

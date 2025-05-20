@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import { motion } from "framer-motion";
 import { SwapButton } from "@/pages/home/main/home-search/SwapButton";
 import { FlightOptions } from "@/pages/home/main/home-search/FlightOptions";
@@ -151,12 +151,11 @@ export default function HomeSearchForm() {
     const newErrors: Record<string, string> = {};
 
     if (!formData.origin.code) {
-      newErrors.origin = "Please select a valid origin from the suggestions";
+      newErrors.origin = "select value form suggetions";
     }
 
     if (!formData.destination.code) {
-      newErrors.destination =
-        "Please select a valid destination from the suggestions";
+      newErrors.destination = "select value form suggetions";
     }
 
     if (!formData.departureDate) {
