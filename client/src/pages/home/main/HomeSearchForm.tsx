@@ -20,7 +20,7 @@ export default function HomeSearchForm() {
   const [formData, setFormData] = useState({
     origin: null as Location | null,
     destination: null as Location | null,
-    departureDate: undefined as Date | undefined,
+    departureDate: new Date() as Date | undefined,
     returnDate: undefined as Date | undefined,
     nearbyAirports: false,
     directFlightsOnly: false,
