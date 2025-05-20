@@ -55,7 +55,7 @@ export function DateInputField({
       // Check if date is before minimum allowed date
       if (selectedDate < actualMinDate) {
         setLocalError(
-          `Date cannot be before ${actualMinDate.toLocaleDateString("en-US", {
+          `Min date: ${actualMinDate.toLocaleDateString("en-US", {
             month: "short",
             day: "numeric",
             year: "numeric",
@@ -67,7 +67,7 @@ export function DateInputField({
       // Check if date is after maximum allowed date
       if (maxDate && selectedDate > maxDate) {
         setLocalError(
-          `Date cannot be after ${maxDate.toLocaleDateString("en-US", {
+          `Max date: ${maxDate.toLocaleDateString("en-US", {
             month: "short",
             day: "numeric",
             year: "numeric",
@@ -88,7 +88,7 @@ export function DateInputField({
   }, [error]);
 
   return (
-    <div className="relative flex flex-col gap-5">
+    <div className="flex flex-col gap-1">
       <div
         className={`flex flex-col relative bg-white px-4 py-1.5 text-black ${className}`}
         id={id}
@@ -127,7 +127,7 @@ export function DateInputField({
                 initial={{ opacity: 0, y: -5 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -5 }}
-                className="text-red-500 text-xs absolute -bottom-5 left-0"
+                className="text-red-500 text-xs  "
               >
                 {localError || error}
               </motion.p>

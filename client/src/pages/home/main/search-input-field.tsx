@@ -312,7 +312,7 @@ export function LocationSearchInput({
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
-            className="text-xs text-red-500 mt-1 px-2 md:px-4" // Added padding to align with input area
+            className="text-xs text-red-500 mt-1 px-2 md:px-4 " // Added padding to align with input area
             role="alert" // For accessibility
           >
             {displayedError}
