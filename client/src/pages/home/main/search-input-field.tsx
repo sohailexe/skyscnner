@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from "react";
-import { MapPin, Plane, Search } from "lucide-react";
+import { MapPin, Plane } from "lucide-react";
 import { useAirports } from "@/store/useAirports";
+import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
 // Types
 export interface Location {
   name: string;
@@ -158,7 +160,6 @@ export function LocationSearchInput({
     }
   };
 
-  // Check if we should show loading state
   const showLoading = isLoading || storeLoading;
 
   return (
@@ -176,10 +177,6 @@ export function LocationSearchInput({
 
         {/* Input Field */}
         <div className="relative">
-          <div className="absolute inset-y-0 left-0 pl-1 flex items-center pointer-events-none">
-            <Search className="h-4 w-4 text-gray-400" />
-          </div>
-
           <input
             ref={inputRef}
             id={id}
@@ -190,7 +187,7 @@ export function LocationSearchInput({
             onKeyDown={handleKeyDown}
             placeholder={placeholder}
             className={`
-            w-full pl-7 py-2 text-black border-none focus:ring-0 focus:outline-none 
+            w-full pl-2 py-2 text-black border-none focus:ring-0 focus:outline-none 
           `}
             autoComplete="off"
           />
@@ -204,11 +201,12 @@ export function LocationSearchInput({
 
           {/* Selected Location Code */}
           {value && !isOpen && (
-            <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
-              <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">
-                {value.code}
-              </span>
-            </div>
+            <Badge
+              className="p-2 border-2 border-light-blue/10 rounded-full  shadow-2xl absolute right-0 bottom-[50%] translate-y-[30%] "
+              variant={"secondary"}
+            >
+              {value.code}
+            </Badge>
           )}
         </div>
 
@@ -216,7 +214,13 @@ export function LocationSearchInput({
 
         {/* Suggestions Dropdown */}
         {isOpen && (
-          <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-64 overflow-y-auto">
+          <Card
+            className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-68 overflow-y-auto"
+            style={{
+              scrollbarColor: "bg-light-blue/90",
+              scrollbarWidth: "thin",
+            }}
+          >
             {/* Header for nearby airports */}
             {inputValue.trim() === "" && nearByAirports.length > 0 && (
               <div className="px-3 py-2 text-xs font-medium text-gray-500 bg-gray-50 border-b">
@@ -270,10 +274,10 @@ export function LocationSearchInput({
                   : "No airports found"}
               </div>
             )}
-          </div>
+          </Card>
         )}
       </div>
-      {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
+      {error && <p className="absolute mt-1 text-sm text-red-600">{error}</p>}
     </>
   );
 }

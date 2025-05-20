@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { motion } from "framer-motion";
 import { SwapButton } from "@/pages/home/main/home-search/SwapButton";
 import { FlightOptions } from "@/pages/home/main/home-search/FlightOptions";
@@ -15,108 +15,283 @@ import { LocationSearchInput, type Location } from "./search-input-field";
 import { getUserLocation } from "@/lib/getLocation";
 import { useAirports } from "@/store/useAirports";
 
+// Types
+interface TravelerDetails {
+  adults: number;
+  children: Array<{ age: number }>;
+}
+
+interface FormData {
+  origin: Location | null;
+  destination: Location | null;
+  departureDate: Date | undefined;
+  returnDate: Date | undefined;
+  nearbyAirports: boolean;
+  directFlightsOnly: boolean;
+  travelerDetails?: TravelerDetails;
+}
+
+interface FormErrors {
+  origin?: string;
+  destination?: string;
+  departureDate?: string;
+  returnDate?: string;
+  general?: string;
+}
+
+interface PopoverState {
+  guests: boolean;
+}
+
+// Constants
+const MIN_ADULTS = 1;
+const MAX_ADULTS = 9;
+const MIN_CHILD_AGE = 1;
+const MAX_CHILD_AGE = 17;
+const MAX_CHILDREN = 8;
+const DEFAULT_CHILD_AGE = 5;
+
+// Animation variants
+const containerVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.5, staggerChildren: 0.1 },
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 10 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      type: "spring",
+      stiffness: 500,
+      damping: 24,
+    },
+  },
+};
+
+// Custom hooks for form logic
+const useFormValidation = () => {
+  const today = useMemo(() => {
+    const date = new Date();
+    date.setHours(0, 0, 0, 0);
+    return date;
+  }, []);
+
+  const validateForm = useCallback(
+    (formData: FormData): FormErrors => {
+      const errors: FormErrors = {};
+
+      // Origin validation
+      if (!formData.origin?.code) {
+        errors.origin = "Please select an origin airport";
+      }
+
+      // Destination validation
+      if (!formData.destination?.code) {
+        errors.destination = "Please select a destination airport";
+      }
+
+      // Same origin/destination validation
+      if (
+        formData.origin?.code &&
+        formData.destination?.code &&
+        formData.origin.code === formData.destination.code
+      ) {
+        errors.destination = "Origin and destination cannot be the same";
+      }
+
+      // Departure date validation
+      if (!formData.departureDate) {
+        errors.departureDate = "Departure date is required";
+      } else if (formData.departureDate < today) {
+        errors.departureDate = "Departure date cannot be in the past";
+      }
+
+      // Return date validation
+      if (
+        formData.returnDate &&
+        formData.departureDate &&
+        formData.returnDate < formData.departureDate
+      ) {
+        errors.returnDate = "Return date cannot be before departure date";
+      }
+
+      return errors;
+    },
+    [today]
+  );
+
+  return { validateForm, today };
+};
+
+const useTravelerManagement = () => {
+  const [adults, setAdults] = useState(MIN_ADULTS);
+  const [children, setChildren] = useState<number[]>([]);
+
+  const incrementAdults = useCallback(() => {
+    setAdults((prev) => Math.min(prev + 1, MAX_ADULTS));
+  }, []);
+
+  const decrementAdults = useCallback(() => {
+    setAdults((prev) => Math.max(prev - 1, MIN_ADULTS));
+  }, []);
+
+  const setChildAge = useCallback((index: number, age: number) => {
+    const clampedAge = Math.max(MIN_CHILD_AGE, Math.min(age, MAX_CHILD_AGE));
+    setChildren((prev) => {
+      const updated = [...prev];
+      updated[index] = clampedAge;
+      return updated;
+    });
+  }, []);
+
+  const addChild = useCallback(() => {
+    setChildren((prev) =>
+      prev.length < MAX_CHILDREN ? [...prev, DEFAULT_CHILD_AGE] : prev
+    );
+  }, []);
+
+  const removeChild = useCallback(() => {
+    setChildren((prev) => (prev.length > 0 ? prev.slice(0, -1) : prev));
+  }, []);
+
+  const travelerDetails = useMemo(
+    (): TravelerDetails => ({
+      adults,
+      children: children.map((age) => ({ age })),
+    }),
+    [adults, children]
+  );
+
+  const travelerSummary = useMemo(() => {
+    const adultText = `${adults} Adult${adults > 1 ? "s" : ""}`;
+    const childText = `${children.length} Child${
+      children.length !== 1 ? "ren" : ""
+    }`;
+    return `${adultText}, ${childText}`;
+  }, [adults, children.length]);
+
+  return {
+    adults,
+    children,
+    travelerDetails,
+    travelerSummary,
+    incrementAdults,
+    decrementAdults,
+    setChildAge,
+    addChild,
+    removeChild,
+    canAddChild: children.length < MAX_CHILDREN,
+    canRemoveChild: children.length > 0,
+    canDecrementAdults: adults > MIN_ADULTS,
+    canIncrementAdults: adults < MAX_ADULTS,
+  };
+};
+
 export default function HomeSearchForm() {
   const navigate = useNavigate();
-  const [formData, setFormData] = useState({
-    origin: null as Location | null,
-    destination: null as Location | null,
-    departureDate: new Date() as Date | undefined,
-    returnDate: undefined as Date | undefined,
+  const { validateForm, today } = useFormValidation();
+  const {
+    adults,
+    children,
+    travelerDetails,
+    travelerSummary,
+    incrementAdults,
+    decrementAdults,
+    setChildAge,
+    addChild,
+    removeChild,
+    canAddChild,
+    canRemoveChild,
+    canDecrementAdults,
+    canIncrementAdults,
+  } = useTravelerManagement();
+
+  // Form state
+  const [formData, setFormData] = useState<FormData>({
+    origin: null,
+    destination: null,
+    departureDate: new Date(),
+    returnDate: undefined,
     nearbyAirports: false,
     directFlightsOnly: false,
   });
-  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const [errors, setErrors] = useState<FormErrors>({});
   const [isLoading, setIsLoading] = useState(false);
   const [rotated, setRotated] = useState(false);
+  const [isOpen, setIsOpen] = useState<PopoverState>({ guests: false });
+
+  // Refs
   const departureRef = useRef<HTMLButtonElement>(null);
   const returnRef = useRef<HTMLButtonElement>(null);
 
+  // Store hooks
   const fetchFlights = useFlightStore((state) => state.fetchFlights);
-  const [isOpen, setIsOpen] = useState({ guests: false });
-  const [adults, setAdults] = useState(1);
-  const [children, setChildren] = useState<number[]>([]);
-  const getnearbyAirports = useAirports((state) => state.nearby);
+  const getNearbyAirports = useAirports((state) => state.nearby);
   const setNearByAirports = useAirports((state) => state.setNearByAirports);
 
-  // Create today's date for validation
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-
+  // Initialize user location and nearby airports
   useEffect(() => {
-    async function fetchUserLocation() {
+    let mounted = true;
+
+    const fetchUserLocation = async () => {
       try {
         const response = await getUserLocation();
-        if (response) {
-          const airports = getnearbyAirports(response.lat, response.lng);
+        if (response && mounted) {
+          const airports = getNearbyAirports(response.lat, response.lng);
           setNearByAirports(airports);
         }
       } catch (error) {
         console.error("Failed to get user location:", error);
-      }
-    }
-
-    fetchUserLocation();
-  }, [getnearbyAirports, setNearByAirports]);
-
-  // Helper functions
-  const increment = (value: number, setter: (v: number) => void) =>
-    setter(value + 1);
-  const decrement = (value: number, setter: (v: number) => void) =>
-    setter(value - 1);
-
-  // Children age state handlers
-  const setChildAge = (index: number, age: number) => {
-    setChildren((prev) => {
-      const updated = [...prev];
-      updated[index] = age;
-      return updated;
-    });
-  };
-
-  const addChild = () => setChildren((prev) => [...prev, 5]);
-  const removeChild = () =>
-    setChildren((prev) => (prev.length > 0 ? prev.slice(0, -1) : prev));
-
-  // Apply guest selection
-  const applyGuestSelection = () => {
-    setFormData((prev) => ({
-      ...prev,
-      traverlerDetails: {
-        adults,
-        children: children.map((age) => ({ age })),
-      },
-    }));
-    setIsOpen((prev) => ({ ...prev, guests: false }));
-  };
-
-  const handleLocationChange =
-    (field: "origin" | "destination") => (location: Location | null) => {
-      setFormData((prev) => ({
-        ...prev,
-        [field]: location,
-      }));
-
-      // Clear any validation errors for this field
-      if (errors[field]) {
-        setErrors((prev) => ({ ...prev, [field]: "" }));
+        if (mounted) {
+          toast("Location access failed", {
+            description: "Please select airports manually.",
+            duration: 3000,
+          });
+        }
       }
     };
 
-  const handleDate =
+    fetchUserLocation();
+
+    return () => {
+      mounted = false;
+    };
+  }, [getNearbyAirports, setNearByAirports]);
+
+  // Event handlers
+  const handleLocationChange = useCallback(
+    (field: "origin" | "destination") => (location: Location | null) => {
+      setFormData((prev) => ({ ...prev, [field]: location }));
+
+      // Clear validation errors for this field
+      if (errors[field]) {
+        setErrors((prev) => ({ ...prev, [field]: undefined }));
+      }
+    },
+    [errors]
+  );
+
+  const handleDateChange = useCallback(
     (field: "departureDate" | "returnDate") => (date: Date | undefined) => {
       setFormData((prev) => {
         const newData = { ...prev, [field]: date };
 
-        // Special handling for date relationships
-        if (field === "departureDate" && date && prev.returnDate) {
-          // If departure date is after return date, clear return date
-          if (date > prev.returnDate) {
-            newData.returnDate = undefined;
-            // Clear related error
-            if (errors.returnDate) {
-              setErrors((e) => ({ ...e, returnDate: "" }));
-            }
-          }
+        // If departure date is changed and is after return date, clear return date
+        if (
+          field === "departureDate" &&
+          date &&
+          prev.returnDate &&
+          date > prev.returnDate
+        ) {
+          newData.returnDate = undefined;
+          setErrors((e) => ({ ...e, returnDate: undefined }));
         }
 
         return newData;
@@ -124,166 +299,148 @@ export default function HomeSearchForm() {
 
       // Clear error when user selects a date
       if (errors[field]) {
-        setErrors((prev) => ({ ...prev, [field]: "" }));
+        setErrors((prev) => ({ ...prev, [field]: undefined }));
       }
-    };
+    },
+    [errors]
+  );
 
-  const handleCheckbox = (field: keyof typeof formData) => (checked: boolean) =>
-    setFormData((prev) => ({ ...prev, [field]: checked }));
+  const handleCheckboxChange = useCallback(
+    (field: keyof FormData) => (checked: boolean) => {
+      setFormData((prev) => ({ ...prev, [field]: checked }));
+    },
+    []
+  );
 
-  const swap = () => {
+  const handleSwap = useCallback(() => {
     setFormData((prev) => ({
       ...prev,
       origin: prev.destination,
       destination: prev.origin,
     }));
-    setRotated((r) => !r);
-  };
+    setRotated((prev) => !prev);
 
-  // Form validation
-  const validateForm = () => {
-    const newErrors: Record<string, string> = {};
+    // Clear location-related errors
+    setErrors((prev) => ({
+      ...prev,
+      origin: undefined,
+      destination: undefined,
+    }));
+  }, []);
 
-    if (!formData.origin?.code) {
-      newErrors.origin = "Please select an origin airport";
+  const applyGuestSelection = useCallback(() => {
+    setFormData((prev) => ({ ...prev, travelerDetails }));
+    setIsOpen((prev) => ({ ...prev, guests: false }));
+  }, [travelerDetails]);
+
+  const scrollToFirstError = useCallback((errors: FormErrors) => {
+    const firstErrorField = Object.keys(errors)[0];
+    const element = document.getElementById(firstErrorField);
+    if (element) {
+      const yOffset = -150;
+      const y =
+        element.getBoundingClientRect().top + window.pageYOffset + yOffset;
+      window.scrollTo({ top: y, behavior: "smooth" });
+      element.focus();
     }
+  }, []);
 
-    if (!formData.destination?.code) {
-      newErrors.destination = "Please select a destination airport";
-    }
+  const handleSearch = useCallback(
+    async (e: React.FormEvent) => {
+      e.preventDefault();
 
-    if (
-      formData.origin?.code &&
-      formData.destination?.code &&
-      formData.origin.code === formData.destination.code
-    ) {
-      newErrors.destination = "Origin and destination cannot be the same";
-    }
+      const validationErrors = validateForm(formData);
 
-    if (!formData.departureDate) {
-      newErrors.departureDate = "Departure date is required";
-    } else if (formData.departureDate < today) {
-      newErrors.departureDate = "Departure date cannot be in the past";
-    }
+      if (Object.keys(validationErrors).length > 0) {
+        setErrors(validationErrors);
 
-    if (
-      formData.returnDate &&
-      formData.departureDate &&
-      formData.returnDate < formData.departureDate
-    ) {
-      newErrors.returnDate = "Return date cannot be before departure date";
-    }
+        toast("Please fix the errors in the form", {
+          description:
+            "Make sure to provide valid input for all required fields.",
+          icon: <AlertCircle className="h-4 w-4" />,
+          action: (
+            <Button
+              variant="link"
+              className="text-black hover:text-black"
+              onClick={() => scrollToFirstError(validationErrors)}
+            >
+              Fix it
+            </Button>
+          ),
+        });
+        return;
+      }
 
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
-      return false;
-    }
+      setIsLoading(true);
+      setErrors({});
 
-    return true;
-  };
+      try {
+        const payload = {
+          fromLocation: formData.origin!.code,
+          toLocation: formData.destination!.code,
+          departureDate: formData.departureDate!.toISOString().split("T")[0],
+          returnDate: formData.returnDate?.toISOString().split("T")[0],
+          userTimezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+          travelerDetails,
+          nearbyAirports: formData.nearbyAirports,
+          directFlightsOnly: formData.directFlightsOnly,
+        };
 
-  const handleSearch = async (e: React.FormEvent) => {
-    e.preventDefault();
+        await fetchFlights(payload);
+        navigate("/flight/search");
+      } catch (error) {
+        console.error("Flight search failed:", error);
 
-    if (!validateForm()) {
-      toast("Please fix the errors in the form", {
-        description:
-          "Make sure to provide valid input for all required fields.",
-        icon: <AlertCircle className="h-4 w-4" />,
-        action: (
-          <Button
-            variant="link"
-            className="text-white hover:text-gray-200"
-            onClick={() => {
-              // Scroll to the first error field
-              const firstErrorField = Object.keys(errors)[0];
-              const element = document.getElementById(firstErrorField);
-              if (element) {
-                element.scrollIntoView({ behavior: "smooth" });
-                element.focus();
-              }
-            }}
-          >
-            Fix it
-          </Button>
-        ),
-      });
-      return;
-    }
+        const errorMessage =
+          error instanceof Error ? error.message : "Unknown error occurred";
 
-    setIsLoading(true);
+        toast("Flight search failed", {
+          description: errorMessage,
+          icon: <AlertCircle className="h-4 w-4" />,
+          duration: 5000,
+        });
 
-    try {
-      const payload = {
-        fromLocation: formData.origin!.code,
-        toLocation: formData.destination!.code,
-        departureDate: formData.departureDate
-          ? formData.departureDate.toISOString().split("T")[0]
-          : "2025-06-10",
-        returnDate: formData.returnDate
-          ? formData.returnDate.toISOString().split("T")[0]
-          : "2025-06-20",
-        userTimezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-        traverlerDetails: {
-          adults: adults,
-          children: children.map((age) => ({ age })),
-        },
-      };
-
-      await fetchFlights(payload);
-      navigate("/flight/search");
-    } catch (error) {
-      console.error("Flight search failed:", error);
-
-      toast("Flight search failed", {
-        description: "Please try again later.",
-        icon: <AlertCircle className="h-4 w-4" />,
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: 10 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: {
-        type: "spring",
-        stiffness: 500,
-        damping: 24,
-      },
+        setErrors({ general: "Flight search failed. Please try again." });
+      } finally {
+        setIsLoading(false);
+      }
     },
-  };
+    [
+      formData,
+      validateForm,
+      travelerDetails,
+      fetchFlights,
+      navigate,
+      scrollToFirstError,
+    ]
+  );
 
   return (
     <motion.form
       onSubmit={handleSearch}
       initial="hidden"
       animate="visible"
-      variants={{
-        hidden: { opacity: 0, y: 20 },
-        visible: {
-          opacity: 1,
-          y: 0,
-          transition: { duration: 0.5, staggerChildren: 0.1 },
-        },
-      }}
+      variants={containerVariants}
       className="bg-dark-blue p-6 md:p-8 rounded-3xl text-white max-w-6xl mx-auto shadow-lg"
+      noValidate
+      role="search"
+      aria-label="Flight search form"
     >
-      <div className="grid grid-cols-1 md:grid-cols-12 gap-2 items-center">
+      {/* General error display */}
+      {errors.general && (
         <motion.div
-          className="relative md:col-span-3"
-          variants={{
-            hidden: { opacity: 0, y: 10 },
-            visible: {
-              opacity: 1,
-              y: 0,
-              transition: { type: "spring", stiffness: 500, damping: 24 },
-            },
-          }}
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-4 p-3 bg-red-100 border border-red-300 rounded-lg text-red-700"
+          role="alert"
         >
+          {errors.general}
+        </motion.div>
+      )}
+
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-2 items-center">
+        {/* Origin */}
+        <motion.div className="relative md:col-span-3" variants={itemVariants}>
           <LocationSearchInput
             id="origin"
             label="From"
@@ -292,12 +449,19 @@ export default function HomeSearchForm() {
             onChange={handleLocationChange("origin")}
             error={errors.origin}
             className="rounded-t-2xl md:rounded-t-none md:rounded-l-2xl py-0.5 pr-6 pl-2 bg-white"
+            required
           />
           <div className="absolute right-0 translate-x-1/2 top-1/2 -translate-y-1/2 z-10">
-            <SwapButton rotated={rotated} onClick={swap} />
+            <SwapButton
+              rotated={rotated}
+              onClick={handleSwap}
+              disabled={isLoading}
+              aria-label="Swap origin and destination"
+            />
           </div>
         </motion.div>
 
+        {/* Destination */}
         <motion.div className="md:col-span-3" variants={itemVariants}>
           <LocationSearchInput
             id="destination"
@@ -307,35 +471,42 @@ export default function HomeSearchForm() {
             onChange={handleLocationChange("destination")}
             className="md:pl-4 py-0.5 bg-white"
             error={errors.destination}
+            required
           />
         </motion.div>
 
-        {/* Date Selector */}
+        {/* Departure Date */}
         <motion.div className="md:col-span-2" variants={itemVariants}>
           <DateInputField
             id="departureDate"
             label="Departure"
             value={formData.departureDate}
-            onChange={handleDate("departureDate")}
+            onChange={handleDateChange("departureDate")}
             error={errors.departureDate}
             buttonRef={departureRef}
             minDate={today}
+            disabled={isLoading}
+            required
           />
         </motion.div>
 
+        {/* Return Date */}
         <motion.div className="md:col-span-2" variants={itemVariants}>
           <DateInputField
             id="returnDate"
             label="Return"
+            placeholder="One way?"
             value={formData.returnDate}
-            onChange={handleDate("returnDate")}
+            onChange={handleDateChange("returnDate")}
             className="md:rounded-b-none"
             error={errors.returnDate}
             buttonRef={returnRef}
             minDate={formData.departureDate || today}
+            disabled={isLoading}
           />
         </motion.div>
 
+        {/* Travelers */}
         <motion.div className="md:col-span-2" variants={itemVariants}>
           <Popover
             open={isOpen.guests}
@@ -347,9 +518,10 @@ export default function HomeSearchForm() {
               <Button
                 variant="outline"
                 className="w-full justify-start bg-white text-black h-17 md:col-span-1 rounded-none rounded-b-2xl md:rounded-b-none md:rounded-r-2xl"
+                disabled={isLoading}
+                aria-label={`Select travelers: ${travelerSummary}`}
               >
-                {adults} Adult{adults > 1 ? "s" : ""}, {children.length} Child
-                {children.length !== 1 ? "ren" : ""}
+                {travelerSummary}
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-72 p-4" align="start">
@@ -358,23 +530,26 @@ export default function HomeSearchForm() {
                 <div>
                   <h3 className="font-medium mb-2">Adults</h3>
                   <div className="flex justify-between items-center">
-                    <span>Age 12+</span>
+                    <span className="text-sm text-gray-600">Age 12+</span>
                     <div className="flex items-center gap-2">
                       <Button
                         size="sm"
                         variant="outline"
                         className="h-8 w-8 p-0"
-                        onClick={() => decrement(adults, setAdults)}
-                        disabled={adults <= 1}
+                        onClick={decrementAdults}
+                        disabled={!canDecrementAdults}
+                        aria-label="Decrease adults"
                       >
                         -
                       </Button>
-                      <span>{adults}</span>
+                      <span className="w-8 text-center">{adults}</span>
                       <Button
                         size="sm"
                         variant="outline"
                         className="h-8 w-8 p-0"
-                        onClick={() => increment(adults, setAdults)}
+                        onClick={incrementAdults}
+                        disabled={!canIncrementAdults}
+                        aria-label="Increase adults"
                       >
                         +
                       </Button>
@@ -391,35 +566,46 @@ export default function HomeSearchForm() {
                         key={index}
                         className="flex justify-between items-center"
                       >
-                        <span>Child {index + 1}</span>
-                        <input
-                          type="number"
-                          value={age}
-                          min={1}
-                          max={17}
-                          onChange={(e) =>
-                            setChildAge(index, Number(e.target.value))
-                          }
-                          className="w-16 p-1 rounded border text-black"
-                        />
+                        <span className="text-sm">Child {index + 1}</span>
+                        <div className="flex items-center gap-2">
+                          <label
+                            htmlFor={`child-age-${index}`}
+                            className="sr-only"
+                          >
+                            Age for child {index + 1}
+                          </label>
+                          <input
+                            id={`child-age-${index}`}
+                            type="number"
+                            value={age}
+                            min={MIN_CHILD_AGE}
+                            max={MAX_CHILD_AGE}
+                            onChange={(e) =>
+                              setChildAge(index, Number(e.target.value))
+                            }
+                            className="w-16 p-1 rounded border text-black text-center"
+                          />
+                          <span className="text-xs text-gray-500">years</span>
+                        </div>
                       </div>
                     ))}
                   </div>
-                  <div className="flex justify-end gap-2 mt-2">
+                  <div className="flex justify-between gap-2 mt-2">
                     <Button
                       size="sm"
                       variant="outline"
-                      className="h-8"
+                      className="h-8 flex-1"
                       onClick={addChild}
+                      disabled={!canAddChild}
                     >
                       + Add Child
                     </Button>
                     <Button
                       size="sm"
                       variant="outline"
-                      className="h-8"
+                      className="h-8 flex-1"
                       onClick={removeChild}
-                      disabled={children.length === 0}
+                      disabled={!canRemoveChild}
                     >
                       - Remove
                     </Button>
@@ -427,7 +613,7 @@ export default function HomeSearchForm() {
                 </div>
 
                 <Button className="w-full mt-4" onClick={applyGuestSelection}>
-                  Apply
+                  Apply ({travelerSummary})
                 </Button>
               </div>
             </PopoverContent>
@@ -437,18 +623,22 @@ export default function HomeSearchForm() {
 
       <div className="py-2 md:py-4">
         {/* Search Button */}
-        <motion.div className="md:col-span-1" variants={itemVariants}>
-          <SearchButton isLoading={isLoading} />
+        <motion.div className="md:col-span-1 mt-1" variants={itemVariants}>
+          <SearchButton
+            isLoading={isLoading}
+            // disabled={isLoading}
+            aria-label="Search for flights"
+          />
         </motion.div>
       </div>
 
+      {/* Flight Options */}
       <FlightOptions
         nearbyAirports={formData.nearbyAirports}
         directOnly={formData.directFlightsOnly}
-        onToggleNearby={(checked) => handleCheckbox("nearbyAirports")(checked)}
-        onToggleDirect={(checked) =>
-          handleCheckbox("directFlightsOnly")(checked)
-        }
+        onToggleNearby={handleCheckboxChange("nearbyAirports")}
+        onToggleDirect={handleCheckboxChange("directFlightsOnly")}
+        // disabled={isLoading}
       />
     </motion.form>
   );
