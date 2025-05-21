@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { motion } from "framer-motion";
 import { SwapButton } from "@/pages/home/main/home-search/SwapButton";
@@ -236,6 +238,14 @@ export default function HomeSearchForm() {
   const getNearbyAirports = useAirports((state) => state.nearby);
   const setNearByAirports = useAirports((state) => state.setNearByAirports);
 
+  useEffect(() => {
+    // Only set returnDate if it's still undefined
+    setFormData((prev) => ({
+      ...prev,
+      returnDate:
+        prev.returnDate ?? new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+    }));
+  }, []);
   // Initialize user location and nearby airports
   useEffect(() => {
     let mounted = true;
@@ -381,7 +391,7 @@ export default function HomeSearchForm() {
           departureDate: formData.departureDate!.toISOString().split("T")[0],
           returnDate: formData.returnDate?.toISOString().split("T")[0],
           userTimezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-          travelerDetails,
+          traverlerDetails: travelerDetails,
           nearbyAirports: formData.nearbyAirports,
           directFlightsOnly: formData.directFlightsOnly,
         };
@@ -449,13 +459,13 @@ export default function HomeSearchForm() {
             onChange={handleLocationChange("origin")}
             error={errors.origin}
             className="rounded-t-2xl md:rounded-t-none md:rounded-l-2xl py-0.5 pr-6 pl-2 bg-white"
-            required
+            // required
           />
           <div className="absolute right-0 translate-x-1/2 top-1/2 -translate-y-1/2 z-10">
             <SwapButton
               rotated={rotated}
               onClick={handleSwap}
-              disabled={isLoading}
+              // disabled={isLoading}
               aria-label="Swap origin and destination"
             />
           </div>
@@ -471,7 +481,7 @@ export default function HomeSearchForm() {
             onChange={handleLocationChange("destination")}
             className="md:pl-4 py-0.5 bg-white"
             error={errors.destination}
-            required
+            // required
           />
         </motion.div>
 

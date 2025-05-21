@@ -84,40 +84,40 @@ const FlightsSidebar = () => {
     applyFlightFilters({ cabinClasses: newCabinClasses });
   };
 
-  const handlePriceSliderChange = (value: number[]) => {
-    setPriceValues(value as [number, number]);
-  };
-  const handleDurationSliderChange = (value: number[]) => {
-    setDurationValues(value as [number, number]);
-  };
+  // const handlePriceSliderChange = (value: number[]) => {
+  //   setPriceValues(value as [number, number]);
+  // };
+  // const handleDurationSliderChange = (value: number[]) => {
+  //   setDurationValues(value as [number, number]);
+  // };
 
-  const handlePriceRangeCommit = (values: [number, number]) => {
-    if (
-      values[0] === filterOptions.minPrice &&
-      values[1] === filterOptions.maxPrice
-    ) {
-      applyFlightFilters({ priceRange: null });
-    } else {
-      applyFlightFilters({ priceRange: { min: values[0], max: values[1] } });
-    }
-  };
+  // const handlePriceRangeCommit = (values: [number, number]) => {
+  //   if (
+  //     values[0] === filterOptions.minPrice &&
+  //     values[1] === filterOptions.maxPrice
+  //   ) {
+  //     applyFlightFilters({ priceRange: null });
+  //   } else {
+  //     applyFlightFilters({ priceRange: { min: values[0], max: values[1] } });
+  //   }
+  // };
 
-  const handleDurationRangeCommit = (values: [number, number]) => {
-    if (
-      values[0] === filterOptions.minDuration &&
-      values[1] === filterOptions.maxDuration
-    ) {
-      applyFlightFilters({ durationRange: null });
-    } else {
-      applyFlightFilters({ durationRange: { min: values[0], max: values[1] } });
-    }
-  };
+  // const handleDurationRangeCommit = (values: [number, number]) => {
+  //   if (
+  //     values[0] === filterOptions.minDuration &&
+  //     values[1] === filterOptions.maxDuration
+  //   ) {
+  //     applyFlightFilters({ durationRange: null });
+  //   } else {
+  //     applyFlightFilters({ durationRange: { min: values[0], max: values[1] } });
+  //   }
+  // };
 
-  const formatDurationLabel = (minutes: number): string => {
-    const h = Math.floor(minutes / 60);
-    const m = minutes % 60;
-    return `${h}h ${m > 0 ? `${m}m` : ""}`.trim() || "0h";
-  };
+  // const formatDurationLabel = (minutes: number): string => {
+  //   const h = Math.floor(minutes / 60);
+  //   const m = minutes % 60;
+  //   return `${h}h ${m > 0 ? `${m}m` : ""}`.trim() || "0h";
+  // };
 
   const stopsOptions = [
     { label: "Any stops", value: "any" as const },
@@ -209,7 +209,7 @@ const FlightsSidebar = () => {
             </AccordionContent>
           </AccordionItem>
         )}
-
+        {/* 
         {filterOptions.maxPrice > 0 &&
           filterOptions.maxPrice > filterOptions.minPrice && (
             <AccordionItem value="price" className="border-none">
@@ -266,7 +266,7 @@ const FlightsSidebar = () => {
                 </div>
               </AccordionContent>
             </AccordionItem>
-          )}
+          )} */}
 
         {filterOptions.cabinClasses.length > 0 && (
           <AccordionItem value="cabin" className="border-none">
