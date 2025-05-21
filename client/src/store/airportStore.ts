@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
@@ -75,6 +76,7 @@ export const useAirports = create<AirportsState>()(
                 a.lon &&
                 (a.city || a.name)
             )
+
             .map((a: any) => ({
               iata: a.iata,
               name: a.name,

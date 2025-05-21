@@ -16,7 +16,7 @@ import OTPSuccess from "./components/auth/Otp-success";
 import HotelSearchResult from "./pages/hotels/hotel-search-result";
 import CarSearchResult from "./pages/cars/car-search-result";
 import PaymentPage from "./pages/payment/PaymentPage";
-import { useAirports } from "./store/useAirports";
+import { useAirports } from "./store/airportStore";
 import { useEffect } from "react";
 const App = () => {
   const fetchAll = useAirports((state) => state.fetchAll);

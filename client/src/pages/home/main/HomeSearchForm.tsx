@@ -13,7 +13,7 @@ import { Popover } from "@/components/ui/popover";
 import { PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { LocationSearchInput, type Location } from "./search-input-field";
 import { getUserLocation } from "@/lib/getLocation";
-import { useAirports } from "@/store/useAirports";
+import { useAirports } from "@/store/airportStore";
 
 // Types
 interface TravelerDetails {

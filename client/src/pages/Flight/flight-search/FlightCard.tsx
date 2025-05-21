@@ -4,7 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Plane, Clock } from "lucide-react";
 import { FlightResult } from "@/store/flightStore";
-import { useAirports } from "@/store/useAirports";
+import { useAirports } from "@/store/airportStore";
 
 interface FlightCardProps {
   flight: FlightResult;

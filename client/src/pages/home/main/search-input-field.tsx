@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { MapPin, Plane } from "lucide-react";
-import { useAirports } from "@/store/useAirports";
+import { useAirports } from "@/store/airportStore";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 // Types
