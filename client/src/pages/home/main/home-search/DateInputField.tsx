@@ -207,7 +207,7 @@ export function DateInputField({
               buttonRef={buttonRef}
               fromDate={actualMinDate}
               toDate={maxDate}
-              disabled={disabled}
+              // disabled={disabled}
               placeholder={placeholder}
               {...accessibilityProps}
             />

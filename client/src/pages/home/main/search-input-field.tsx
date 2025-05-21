@@ -202,7 +202,7 @@ export function LocationSearchInput({
           {/* Selected Location Code */}
           {value && !isOpen && (
             <Badge
-              className="p-2 border-2 border-light-blue/10 rounded-full  shadow-2xl absolute right-0 bottom-[50%] translate-y-[30%] "
+              className="p-2 border-2 border-light-blue/10 rounded-full  shadow-2xl absolute right-0  "
               variant={"secondary"}
             >
               {value.code}

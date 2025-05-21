@@ -123,6 +123,8 @@ export function PaymentForm() {
 
   // Handle form submission
   async function onSubmit(values: z.infer<typeof formSchema>) {
+    console.log(values);
+
     setIsSubmitting(true);
   }
 

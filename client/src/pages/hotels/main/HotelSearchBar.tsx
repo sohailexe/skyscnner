@@ -1,7 +1,6 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { Calendar, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Location } from "@/pages/home/main/HomeSearchForm";
 import { useNavigate } from "react-router";
 import {
   Popover,
@@ -9,7 +8,10 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Calendar as CalendarComponent } from "@/components/calender";
-import { LocationSearchInput } from "@/pages/home/main/search-input-field";
+import {
+  LocationSearchInput,
+  Location,
+} from "@/pages/home/main/search-input-field";
 import { useHotelStore } from "@/store/hotelStore";
 import { HotelSearchPayload } from "@/store/hotelStore";
 // Type definitions
@@ -57,6 +59,7 @@ export default function HotelSearchForm() {
     destination: {
       name: "",
       code: "",
+      type: "city",
     },
     checkIn: new Date(),
     checkout: new Date(new Date().setDate(new Date().getDate() + 1)),
@@ -68,7 +71,6 @@ export default function HotelSearchForm() {
     roomType: "ALL",
     userTimezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
   });
-
   const fetchHotels = useHotelStore((state) => state.fetchHotels);
   const navigate = useNavigate();
 
@@ -128,15 +130,14 @@ export default function HotelSearchForm() {
       togglePopover(field === "checkIn" ? "checkIn" : "checkOut", false);
     };
 
-  const handleLocationChange = (field: "destination") => (value: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      [field]: {
-        ...prev[field],
-        name: value,
-      },
-    }));
-  };
+  const handleLocationChange = useCallback(
+    (field: "origin" | "destination") => (location: Location | null) => {
+      setFormData((prev) => ({ ...prev, [field]: location }));
+
+      // Clear validation errors for this field
+    },
+    [setFormData]
+  );
 
   const handleSearch = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault();
@@ -263,21 +264,10 @@ export default function HotelSearchForm() {
           /> */}
             <LocationSearchInput
               id="destination"
-              label=""
-              showLabel={false}
+              placeholder="Where are you flying from?"
               value={formData.destination}
               onChange={handleLocationChange("destination")}
-              onSelect={(location) => {
-                // Store the full location object with both code and name
-                setFormData((prev) => ({
-                  ...prev,
-                  destination: {
-                    name: location.name,
-                    code: location.code,
-                  },
-                }));
-              }}
-              className="rounded-md pr-6 py-3"
+              className="bg-white rounded-lg py-1"
             />
           </div>
         </div>

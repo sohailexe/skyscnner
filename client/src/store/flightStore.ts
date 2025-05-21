@@ -32,6 +32,13 @@ export interface FlightResult {
   currency: string; // e.g., "USD"
 }
 
+// Add interface for API response structure
+export interface FlightApiResponse {
+  success: boolean;
+  data: FlightResult[];
+  message?: string;
+}
+
 export interface ActiveFlightFilters {
   airlines: string[];
   stops: (number | "any")[];
@@ -148,12 +155,19 @@ export const useFlightStore = create<FlightState>((set, get) => ({
   fetchFlights: async (payload) => {
     try {
       set({ loading: true, error: null, activeFilters: initialFiltersState });
-      const response = await axios.post<FlightResult[]>( // Expecting FlightResult array
+
+      // Fix: Use the correct response type
+      const response = await axios.post<FlightApiResponse>(
         "/api/booking/flight/unified-details",
         payload
       );
+      console.log(response.data);
 
-      const flightsWithIds = response.data.data.map((f, index) => ({
+      // Fix: Handle potential missing data gracefully
+      const flightData = response.data?.data || [];
+      console.log(response.data);
+
+      const flightsWithIds = flightData.map((f, index) => ({
         ...f,
         id: f.id || `flight-${Date.now()}-${index}`, // Ensure unique ID
       }));
