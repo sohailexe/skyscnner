@@ -181,6 +181,8 @@ const getHotelDetails = async (
         currency: "EUR",
       });
     } catch (err) {
+      console.log(err);
+
       return res.status(502).json({
         success: false,
         message: "Failed to fetch hotel offers. Please try again later.",
