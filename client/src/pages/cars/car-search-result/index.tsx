@@ -1,5 +1,5 @@
 import CarSearchResult from "./CarSearchResult"; // Adjust path
-import FiltersSidebar from "./FiltersSidebar"; // Adjust path
+
 import ScrollToTopButton from "./ScrollToTopButton"; // Adjust path
 
 const CarResultsPage = () => {
@@ -14,11 +14,6 @@ const CarResultsPage = () => {
           </p>
         </div>
         <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
-          <aside className="w-full lg:w-[280px] xl:w-[320px] flex-shrink-0 px-2 sm:px-0 lg:px-0">
-            {" "}
-            {/* Added padding control */}
-            <FiltersSidebar />
-          </aside>
           <main className="w-full flex-grow">
             <CarSearchResult />
           </main>

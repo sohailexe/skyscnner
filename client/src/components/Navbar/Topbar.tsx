@@ -2,10 +2,10 @@ import { Link } from "react-router";
 import { Button } from "../ui/button";
 import { DropdownOptions } from "./Dropdown-options";
 import Logo from "@/components/Logo";
-// import { useAuth } from "@/context/AuthContext";
+import { useAuth } from "@/context/AuthContext";
 
 export const Topbar = () => {
-  // const { logout } = useAuth();
+  const { logout, user } = useAuth();
   return (
     <div className="maxScreen flex justify-between py-2">
       <div>
@@ -14,11 +14,13 @@ export const Topbar = () => {
       <div>
         <ul className="flex gap-1">
           <li>
-            <Link to={"/login"}>
-              <Button className="" variant={"ghost"}>
-                Login{" "}
-              </Button>
-            </Link>
+            {!user && (
+              <Link to={"/login"}>
+                <Button className="" variant={"ghost"}>
+                  Login{" "}
+                </Button>
+              </Link>
+            )}
           </li>
           <li>
             <Link to={"/payments"}>
@@ -28,9 +30,11 @@ export const Topbar = () => {
             </Link>
           </li>
           <li>
-            {/* <Button className="" variant={"ghost"} onClick={logout}>
-              Logout
-            </Button> */}
+            {user && (
+              <Button className="" variant={"ghost"} onClick={logout}>
+                Logout
+              </Button>
+            )}
           </li>
           <li>
             <DropdownOptions />

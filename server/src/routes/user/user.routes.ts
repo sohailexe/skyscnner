@@ -9,13 +9,14 @@ import {
   registerController,
   sendOtpController,
 } from "./user.controller";
+import { asyncHandler } from "../../utils/asyncHandler";
 
 const router = Router();
 
-router.post("/sendOtp", existedUser, sendOtpController);
-router.post("/register", existedUser, registerController);
-router.post("/login", loginController);
-router.get("/", authChecker, getUserInfoController);
-router.post("/logout", logoutController);
+router.post("/sendOtp", existedUser, asyncHandler(sendOtpController));
+router.post("/register", existedUser, asyncHandler(registerController));
+router.post("/login", asyncHandler(loginController));
+router.get("/", authChecker, asyncHandler(getUserInfoController));
+router.post("/logout", asyncHandler(logoutController));
 
 export { router as userRouter };

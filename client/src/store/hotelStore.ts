@@ -15,6 +15,7 @@ export interface HotelData {
   currency: string;
   refundable: boolean;
   guests: number;
+  bedType: string;
 }
 
 export interface HotelSearchPayload {

@@ -10,6 +10,7 @@ import { userRouter } from "./routes/user/user.routes";
 
 import { config } from "dotenv";
 import { bookingRouter } from "./routes/bookings/booking.routes";
+import { dashboardRouter } from "./routes/dashboard/dashboard.routes";
 
 config();
 
@@ -37,6 +38,7 @@ app.get<{}, MessageResponse>("/", (req, res) => {
 });
 app.use("/api/auth", userRouter);
 app.use("/api/booking", bookingRouter);
+app.use("/api/dashboard", dashboardRouter);
 app.listen(port, () => {
   console.log(`App is listening on port ${port}`);
 });
