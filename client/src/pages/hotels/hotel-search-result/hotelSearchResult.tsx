@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useHotelStore } from "@/store/hotelStore";
 import {
-  Star,
   Filter,
   MapPin,
   Check,
@@ -14,15 +13,17 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import NoHotelsFound from "@/components/NoHotelsFound";
 
 const HotelSearchResult = () => {
   const hotels = useHotelStore((state) => state.hotels);
   const loading = useHotelStore((state) => state.loading);
   const error = useHotelStore((state) => state.error);
-  const [sortOption, setSortOption] = useState<string>("recommended");
 
   // Filter states
-  const [priceRange, setPriceRange] = useState<[number, number]>([0, 1000]);
+  const [priceRange, setPriceRange] = useState<[number, number]>([0, 3000]);
+  const [bedType, setBedType] = useState<string[]>([]);
+  const [refundable, setRefundable] = useState<boolean>(false);
   const [filterOpen, setFilterOpen] = useState(false);
 
   if (loading) {
@@ -49,8 +50,6 @@ const HotelSearchResult = () => {
     );
   }
 
-  console.log("Hotels:", hotels);
-
   if (!hotels.length) {
     return (
       <div className="container mx-auto px-4 py-12 max-w-4xl">
@@ -75,9 +74,6 @@ const HotelSearchResult = () => {
     );
   }
 
-  // Helper functions
-  const getRandomRating = () => (3 + Math.random() * 2).toFixed(1);
-
   const formatPrice = (price: string) => {
     const numPrice = parseFloat(price);
     return new Intl.NumberFormat("en-US", {
@@ -85,20 +81,24 @@ const HotelSearchResult = () => {
       currency: "USD",
     }).format(numPrice);
   };
-
-  // Sort hotels based on selected option
-  const sortedHotels = [...hotels].sort((a, b) => {
-    switch (sortOption) {
-      case "price-low":
-        return parseFloat(a.price) - parseFloat(b.price);
-      case "price-high":
-        return parseFloat(b.price) - parseFloat(a.price);
-      case "rating":
-        return parseFloat(getRandomRating()) - parseFloat(getRandomRating());
-      default:
-        return 0; // Default recommended sort
-    }
+  const filteredHotels = hotels.filter((hotel) => {
+    const matchesBedType =
+      bedType.length > 0 ? bedType.includes(hotel.bedType) : true;
+    const matchesRefundable =
+      refundable === true ? hotel.refundable === true : true;
+    const macthesPrices =
+      parseInt(hotel.price) >= priceRange[0] &&
+      parseInt(hotel.price) <= priceRange[1];
+    return matchesBedType && matchesRefundable && macthesPrices;
   });
+
+  const bedTypes = new Set(hotels.map((hotel) => hotel.bedType));
+
+  const onClearFilters = () => {
+    setBedType([]);
+    setRefundable(false);
+    setPriceRange([0, 3000]);
+  };
 
   return (
     <div className="bg-gray-50 min-h-screen pb-12 ">
@@ -138,20 +138,6 @@ const HotelSearchResult = () => {
               </Badge>
             </div>
           </div>
-
-          <div className="flex items-center">
-            <span className="text-sm text-gray-500 mr-2">Sort by:</span>
-            <select
-              className="bg-white border border-gray-300 rounded-md px-2 py-1 text-sm"
-              value={sortOption}
-              onChange={(e) => setSortOption(e.target.value)}
-            >
-              <option value="recommended">Recommended</option>
-              <option value="price-low">Price: Low to High</option>
-              <option value="price-high">Price: High to Low</option>
-              <option value="rating">Guest Rating</option>
-            </select>
-          </div>
         </div>
 
         {/* Filter panel - conditionally shown */}
@@ -162,10 +148,10 @@ const HotelSearchResult = () => {
                 <h3 className="font-medium mb-3">Price Range</h3>
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-sm text-gray-600">
-                    ${priceRange[0]}
+                    €{priceRange[0]}
                   </span>
                   <span className="text-sm text-gray-600">
-                    ${priceRange[1]}
+                    €{priceRange[1]}
                   </span>
                 </div>
                 <input
@@ -181,20 +167,25 @@ const HotelSearchResult = () => {
               </div>
 
               <div>
-                <h3 className="font-medium mb-3">Property Type</h3>
+                <h3 className="font-medium mb-3">Bed Type</h3>
                 <div className="space-y-2">
-                  <label className="flex items-center">
-                    <input type="checkbox" className="mr-2" defaultChecked />
-                    <span>Hotels</span>
-                  </label>
-                  <label className="flex items-center">
-                    <input type="checkbox" className="mr-2" defaultChecked />
-                    <span>Resorts</span>
-                  </label>
-                  <label className="flex items-center">
-                    <input type="checkbox" className="mr-2" defaultChecked />
-                    <span>Apartments</span>
-                  </label>
+                  {Array.from(bedTypes).map((type) => (
+                    <label key={type} className="flex items-center">
+                      <input
+                        type="checkbox"
+                        className="mr-2"
+                        defaultChecked={false}
+                        onChange={(e) => {
+                          if (e.currentTarget.checked) {
+                            setBedType([...bedType, type]);
+                          } else {
+                            setBedType(bedType.filter((item) => item !== type));
+                          }
+                        }}
+                      />
+                      <span>{type}</span>
+                    </label>
+                  ))}{" "}
                 </div>
               </div>
 
@@ -202,149 +193,131 @@ const HotelSearchResult = () => {
                 <h3 className="font-medium mb-3">Amenities</h3>
                 <div className="space-y-2">
                   <label className="flex items-center">
-                    <input type="checkbox" className="mr-2" defaultChecked />
-                    <span>Free WiFi</span>
-                  </label>
-                  <label className="flex items-center">
-                    <input type="checkbox" className="mr-2" defaultChecked />
-                    <span>Breakfast Included</span>
-                  </label>
-                  <label className="flex items-center">
-                    <input type="checkbox" className="mr-2" defaultChecked />
-                    <span>Free Parking</span>
+                    <input
+                      type="checkbox"
+                      className="mr-2"
+                      defaultChecked={false}
+                      onChange={(e) => {
+                        setRefundable(e.currentTarget.checked);
+                      }}
+                    />
+                    <span>Refundable</span>
                   </label>
                 </div>
               </div>
-            </div>
-
-            <div className="flex justify-end mt-4">
-              <Button variant="outline" className="mr-2">
-                Reset
-              </Button>
-              <Button>Apply Filters</Button>
             </div>
           </div>
         )}
 
-        {/* Hotel Listings */}
         <div className="space-y-6">
-          {sortedHotels.map((hotel, index) => {
-            const rating = getRandomRating();
-            return (
-              <div
-                key={index}
-                className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow"
-              >
-                <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4">
-                  {/* Hotel Image */}
-                  <div className="md:col-span-1 h-48 md:h-full bg-blue-100 relative">
-                    <div
-                      className="w-full h-full bg-cover bg-center"
-                      style={{
-                        backgroundImage: `url(/api/placeholder/400/300)`,
-                      }}
-                    ></div>
+          {filteredHotels.length > 0 ? (
+            filteredHotels.map((hotel) => {
+              return (
+                <div
+                  key={hotel.hotelName}
+                  className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow"
+                >
+                  <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4">
+                    {/* Hotel Image */}
+                    <div className="md:col-span-1 h-48 md:h-full bg-blue-100 relative">
+                      <div
+                        className="w-full h-full bg-cover bg-center"
+                        style={{
+                          backgroundImage: `url(/api/placeholder/400/300)`,
+                        }}
+                      ></div>
 
-                    {hotel.refundable && (
-                      <div className="absolute top-0 left-0 bg-green-600 text-white text-xs px-2 py-1 m-2 rounded">
-                        Fully Refundable
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Hotel Details */}
-                  <div className="p-4 md:p-6 md:col-span-2 lg:col-span-2">
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <h2 className="text-xl font-bold mb-1">
-                          {hotel.hotelName}
-                        </h2>
-                        <div className="flex items-center mb-3">
-                          <div className="flex mr-2">
-                            {Array.from({
-                              length: Math.floor(parseFloat(rating)),
-                            }).map((_, i) => (
-                              <Star
-                                key={i}
-                                className="w-4 h-4 text-yellow-400 fill-current"
-                              />
-                            ))}
-                          </div>
-                          <span className="text-sm font-medium">
-                            {rating}/5
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="text-sm text-gray-600 mb-3 flex items-center">
-                      <MapPin className="w-4 h-4 mr-1" />
-                      {hotel.cityCode}
-                    </div>
-
-                    <div className="mb-3">
-                      <div className="text-sm flex flex-wrap gap-2">
-                        <span className="inline-flex items-center bg-blue-50 text-blue-700 rounded-full px-2 py-1 text-xs">
-                          <Wifi className="w-3 h-3 mr-1" /> Free WiFi
-                        </span>
-                        <span className="inline-flex items-center bg-blue-50 text-blue-700 rounded-full px-2 py-1 text-xs">
-                          <Coffee className="w-3 h-3 mr-1" /> Breakfast
-                        </span>
-                        <span className="inline-flex items-center bg-blue-50 text-blue-700 rounded-full px-2 py-1 text-xs">
-                          <Car className="w-3 h-3 mr-1" /> Parking
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="text-sm text-gray-700 line-clamp-2">
-                      {hotel.description ||
-                        "Experience comfort and luxury at this centrally located property. Enjoy modern amenities and exceptional service throughout your stay."}
-                    </div>
-
-                    <div className="mt-3 text-sm">
-                      <span className="font-medium">
-                        {hotel.roomCategory || "Standard Room"}
-                      </span>
-                      <span className="text-gray-600"> • {hotel.bedInfo}</span>
-                    </div>
-                  </div>
-
-                  {/* Price and Booking */}
-                  <div className="p-4 md:p-6 bg-gray-50 flex flex-col justify-between border-t md:border-t-0 md:border-l">
-                    <div>
-                      <div className="text-sm text-gray-500 mb-1">
-                        3-night stay
-                      </div>
-                      <div className="font-bold text-2xl mb-1">
-                        {formatPrice(hotel.price)}
-                      </div>
-                      <div className="text-xs text-gray-500 mb-3">
-                        Includes taxes & fees
-                      </div>
-
-                      {hotel.refundable ? (
-                        <div className="flex items-center text-green-600 text-sm mb-4">
-                          <Check className="w-4 h-4 mr-1" />
-                          <span>Free cancellation</span>
-                        </div>
-                      ) : (
-                        <div className="flex items-center text-gray-500 text-sm mb-4">
-                          <X className="w-4 h-4 mr-1" />
-                          <span>Non-refundable</span>
+                      {hotel.refundable && (
+                        <div className="absolute top-0 left-0 bg-green-600 text-white text-xs px-2 py-1 m-2 rounded">
+                          Fully Refundable
                         </div>
                       )}
                     </div>
 
-                    <div>
-                      <Button className="w-full bg-blue-600 hover:bg-blue-700">
-                        View Deal
-                      </Button>
+                    {/* Hotel Details */}
+                    <div className="p-4 md:p-6 md:col-span-2 lg:col-span-2">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <h2 className="text-xl font-bold mb-1">
+                            {hotel.hotelName}
+                          </h2>
+                        </div>
+                      </div>
+
+                      <div className="text-sm text-gray-600 mb-3 flex items-center">
+                        <MapPin className="w-4 h-4 mr-1" />
+                        {hotel.cityCode}
+                      </div>
+
+                      <div className="mb-3">
+                        <div className="text-sm flex flex-wrap gap-2">
+                          <span className="inline-flex items-center bg-blue-50 text-blue-700 rounded-full px-2 py-1 text-xs">
+                            <Wifi className="w-3 h-3 mr-1" /> Free WiFi
+                          </span>
+                          <span className="inline-flex items-center bg-blue-50 text-blue-700 rounded-full px-2 py-1 text-xs">
+                            <Coffee className="w-3 h-3 mr-1" /> Breakfast
+                          </span>
+                          <span className="inline-flex items-center bg-blue-50 text-blue-700 rounded-full px-2 py-1 text-xs">
+                            <Car className="w-3 h-3 mr-1" /> Parking
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="text-sm text-gray-700 line-clamp-2">
+                        {hotel.description ||
+                          "Experience comfort and luxury at this centrally located property. Enjoy modern amenities and exceptional service throughout your stay."}
+                      </div>
+
+                      <div className="mt-3 text-sm">
+                        <span className="font-medium">
+                          {hotel.roomCategory || "Standard Room"}
+                        </span>
+                        <span className="text-gray-600">
+                          {" "}
+                          • {hotel.bedInfo}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Price and Booking */}
+                    <div className="p-4 md:p-6 bg-gray-50 flex flex-col justify-between border-t md:border-t-0 md:border-l">
+                      <div>
+                        <div className="text-sm text-gray-500 mb-1">
+                          3-night stay
+                        </div>
+                        <div className="font-bold text-2xl mb-1">
+                          {formatPrice(hotel.price)}
+                        </div>
+                        <div className="text-xs text-gray-500 mb-3">
+                          Includes taxes & fees
+                        </div>
+
+                        {hotel.refundable ? (
+                          <div className="flex items-center text-green-600 text-sm mb-4">
+                            <Check className="w-4 h-4 mr-1" />
+                            <span>Free cancellation</span>
+                          </div>
+                        ) : (
+                          <div className="flex items-center text-gray-500 text-sm mb-4">
+                            <X className="w-4 h-4 mr-1" />
+                            <span>Non-refundable</span>
+                          </div>
+                        )}
+                      </div>
+
+                      <div>
+                        <Button className="w-full bg-blue-600 hover:bg-blue-700">
+                          View Deal
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })
+          ) : (
+            <NoHotelsFound onClearFilters={() => onClearFilters()} />
+          )}
         </div>
       </div>
     </div>

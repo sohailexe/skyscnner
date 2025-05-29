@@ -7,21 +7,22 @@ export const authChecker = (
   res: Response,
   next: NextFunction
 ) => {
-  const token = req.cookies?.accessToken;
+  try {
+    const token = req.cookies?.accessToken;
 
-  if (!token) {
-    return next({ message: "Token is required", status: 404 });
-  }
+    if (!token) {
+      return next({ message: "Token is required", status: 404 });
+    }
 
-  const user = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET!);
-  if (user) {
+    const user = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET!);
     req.body.user = user;
 
     next();
-  } else {
-    next({ message: "Invalid Tokens", status: 404 });
+  } catch (err) {
+    next({ message: "Invalid or expired token", status: 401 });
   }
 };
+
 export const authParser = (req: Request, res: Response, next: NextFunction) => {
   const token = req.cookies?.accessToken;
 

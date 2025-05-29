@@ -150,6 +150,7 @@ const getHotelDetails = async (
         cityCode: destination,
       });
     } catch (err) {
+      console.log(err);
       return res.status(502).json({
         success: false,
         message: "Failed to fetch hotel locations from external provider.",
@@ -157,6 +158,7 @@ const getHotelDetails = async (
     }
 
     const hotels = hotelsResponse?.data;
+
     if (!hotels || hotels.length === 0) {
       return res.status(404).json({
         success: false,
@@ -215,6 +217,8 @@ const getHotelDetails = async (
         offer.offers[0].policies?.refundable?.cancellationRefund ===
         "REFUNDABLE_UP_TO_DEADLINE";
 
+      const bedType = room.typeEstimated.bedType || "N/A";
+
       const guests = offer.offers[0].guests?.adults || 1;
 
       return {
@@ -229,6 +233,7 @@ const getHotelDetails = async (
         currency,
         refundable,
         guests,
+        bedType,
       };
     });
 

@@ -18,6 +18,13 @@ import CarSearchResult from "./pages/cars/car-search-result";
 import PaymentPage from "./pages/payment/PaymentPage";
 import { useAirports } from "./store/airportStore";
 import { useEffect } from "react";
+import DashboardLayout from "./layouts/DashboardLayout";
+import DashboardMain from "./pages/dashboard/DashboardMain";
+import FlightSearch from "./pages/dashboard/FlightSearch";
+import HotelSearch from "./pages/dashboard/HotelSearch";
+import CarSearch from "./pages/dashboard/CarSearch";
+import UserDetails from "./pages/dashboard/UserDetails";
+import AdminAuth from "./pages/dashboard/AdminAuth";
 const App = () => {
   const fetchAll = useAirports((state) => state.fetchAll);
   useEffect(() => {
@@ -58,8 +65,15 @@ const App = () => {
           <Route path="cars" element={<CarsPage />} />
           <Route path="cars/search" element={<CarSearchResult />} />
         </Route>
+        <Route path="/admin-auth" element={<AdminAuth />} />
 
-        {/* Protected Routes */}
+        <Route path="dashboard" element={<DashboardLayout />}>
+          <Route index element={<DashboardMain />} />
+          <Route path="user-details" element={<UserDetails />} />
+          <Route path="flight-search" element={<FlightSearch />} />
+          <Route path="hotel-search" element={<HotelSearch />} />
+          <Route path="car-search" element={<CarSearch />} />
+        </Route>
       </Routes>
     </Router>
   );

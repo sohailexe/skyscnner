@@ -14,11 +14,12 @@ import {
   faHotel,
   faPlane,
 } from "@fortawesome/free-solid-svg-icons";
+import { Link } from "react-router";
 
 const menuItems = [
-  { icon: faPlane, label: "Flight" },
-  { icon: faHotel, label: "Hotel" },
-  { icon: faCar, label: "Car" },
+  { icon: faPlane, label: "Flight", path: "/flights" },
+  { icon: faHotel, label: "Hotel", path: "/hotels" },
+  { icon: faCar, label: "Car", path: "/cars" },
 ];
 
 export function DropdownOptions() {
@@ -36,6 +37,7 @@ export function DropdownOptions() {
               key={`group1-${index}`}
               icon={item.icon}
               label={item.label}
+              path={item.path}
             />
           ))}
         </DropdownMenuGroup>
@@ -48,6 +50,7 @@ export function DropdownOptions() {
               key={`group2-${index}`}
               icon={item.icon}
               label={item.label}
+              path={item.path}
             />
           ))}
         </DropdownMenuGroup>
@@ -56,11 +59,21 @@ export function DropdownOptions() {
   );
 }
 
-function MenuItem({ icon, label }: { icon: any; label: string }) {
+function MenuItem({
+  icon,
+  label,
+  path,
+}: {
+  icon: any;
+  label: string;
+  path: string;
+}) {
   return (
     <DropdownMenuItem>
-      <FontAwesomeIcon icon={icon} className="mr-4 text-blue-500" />
-      <span>{label}</span>
+      <Link to={path}>
+        <FontAwesomeIcon icon={icon} className="mr-4 text-blue-500" />
+        <span>{label}</span>
+      </Link>
     </DropdownMenuItem>
   );
 }
